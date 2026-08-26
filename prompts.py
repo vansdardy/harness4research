@@ -2,7 +2,8 @@
 
 # Author Prompts
 AUTHOR_ROUND_ZERO_CLI = """
-### Budget: Round 0  of [MAX_ROUNDS] ###
+### Budget: Round 0 of [MAX_ROUNDS] ###
+First, quickly scan the directory, and understand its structure.
 
 Act as a research-level mathematical proof/research author. Work on
 the problem below to the fullest extent possible.
@@ -12,25 +13,27 @@ Output exactly three sections, clearly separated with headers:
 ### answer.md ###
 (Your current best writeup — a complete, self-contained account of
 what you've established so far. Use standard Markdown; LaTeX math
-inline/display via $...$ and $$...$$ is fine.)
+inline/display via $...$ and $$...$$ must used for the file to properly render.
+You may write to this file.)
 
 ### research_notes.md ###
 (Your reasoning trace, literature notes, scratch computations. Need
 not be polished. This is your persistent scratchpad across rounds —
 do NOT turn it into a changelog or a reply to a critic; a future
 version of you should be able to read this and pick up where you
-left off.)
+left off. You may write to this file.)
 
-### references.md ###
+### references.md and references/###
 (A plain list of references you've cited above — author, title,
 year, and where relevant a one-line note on what you're using it
-for. No strict format required.)
+for. No strict format required. You may also find reference papers
+in `references/` folder)
 
 You have a sandbox folder at `sandbox/` where you can write and
 run any script to help yourself — numerical sanity checks, exhaustive
 small-case verification, symbolic algebra, etc. Before running
 anything, activate the virtual environment first:
-`source .venv/bin/activate`. Then, you may install any packages in the 
+`source sandbox/.venv/bin/activate`. Then, you may install any packages in the 
 virtual environment as needed.
 Treat the sandbox as scratch space: nothing there is part of the
 deliverable, and nothing you write there needs to be polished. If a
@@ -78,8 +81,8 @@ an Author/Critic loop. You have already produced an earlier version;
 a Critic has reviewed it. Refine the files in response to the
 Critic's findings.
 
-To update a file, output its full new contents under a header like
-"### answer.md ###". Files you don't re-output are considered
+To update a file, write/modify its full new contents to 
+the corresponding file. Files you don't re-output are considered
 unchanged.
 
 **research_notes.md is your persistent scratchpad across rounds.**
@@ -87,7 +90,7 @@ Do not turn it into a changelog or reply to the Critic.
 
 You have a sandbox folder at `sandbox/` where you can write and
 run any script to help yourself. Before running anything, activate
-the virtual environment: `source .venv/bin/activate`. Then, you may install 
+the virtual environment: `source sandbox/.venv/bin/activate`. Then, you may install 
 any packages in the virtual environment as needed. Summarize any
 finding that matters for the proof in research_notes.md — the
 sandbox itself is scratch space, not persistent evidence.
@@ -165,7 +168,7 @@ own line.
 AUTHOR_FINAL_WRITEUP_CLI = """
 This is the final round. You may NOT consult an outside expert this
 round. You still have the sandbox at `sandbox/` available
-(activate the venv first: `source .venv/bin/activate`, and install
+(activate the venv first: `source sandbox/.venv/bin/activate`, and install
 relevant packages) if you need it
 to double-check something before finalizing.
 
@@ -247,6 +250,11 @@ assume earlier concerns were resolved. Note which of your previous
 concerns the revision addresses, which remain, and any new issues
 introduced.
 
+# Problem statement
+{problem}
+
+# Author's solution attempt
+
 ## answer.md (revised)
 {answer}
 
@@ -279,7 +287,12 @@ Even if they phrase it as "is X correct?", prefer a constructive
 answer over a verdict.
 
 Be opinionated where you have a real angle. If unsure, say so rather
-than confabulating. Keep your reply under ~600 words.
+than confabulating. Keep your reply under ~600 words. Write your math
+expressions using proper Markdown inline/display symbols like: "$...$"
+or "$$...$$"    
+
+### Problem at Hand ###
+{problem}
 
 ### Question ###
 {author_question}

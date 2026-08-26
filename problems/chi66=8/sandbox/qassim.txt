@@ -1,0 +1,4418 @@
+Classical Simulations of Quantum
+Systems Using Stabilizer
+Decompositions
+by
+Hammam Qassim
+A thesis
+presented to the University of Waterloo
+in fulﬁllment of the
+thesis requirement for the degree of
+Doctor of Philosophy
+in
+Physics (Quantum Information)
+Waterloo, Ontario, Canada, 2020
+© Hamam Qassim 2020
+Examining Committee Membership
+The following served on the Examining Committee for this thesis. The decision of the
+Examining Committee is by majority vote.
+External Examiner: Barry Sanders
+Professor, Dept. of Physics and Astronomy, University of Calgary
+Supervisor(s): Joseph Emerson
+Professor, Dept. of Applied Mathematics, University of Waterloo
+Joel Wallman
+Professor, Dept. of Applied Mathematics, University of Waterloo
+Internal-External Member: Pierre-Nicholas Roy
+Professor, Dept. of Chemistry, University of Waterloo
+Other Member(s): Raymond Laﬂamme
+Professor, Dept. of Physics and Astronomy, University of Waterloo
+Richard Cleve
+Professor, School of Computer Science, University of Waterloo
+David Cory
+Professor, Dept. of Chemistry, University of Waterloo
+ii
+Author’s declaration
+I hereby declare that I am the sole author of this thesis. This is a true copy of the thesis,
+including any required ﬁnal revisions, as accepted by my examiners.
+I understand that my thesis may be made electronically available to the public.
+iii
+Abstract
+One of the state of the art techniques for classically simulating quantum circuits relies
+on approximating the output state of the circuit by a superposition of stabilizer states.
+If the number of non-Cliﬀord gates in the circuit is small, such simulations can be very
+eﬀective. This thesis provides various improvements in this framework. First, we describe
+an improved method of computing approximate stabilizer decompositions, which reduces
+the time cost of computing a single term in the decomposition from O(𝓁n2) to O(mn2),
+where 𝓁 is the total number of gates in the circuit, and m is the number of non-Cliﬀord
+gates. Since this subroutine has to be repeated exponentially many times, this improvement
+can be signiﬁcant in practice whenever𝓁≫m. Our method uses a certain re-writing of the
+circuit, which in some cases allows for a signiﬁcant amelioration of the exponential scaling
+of the required classical resources.
+Furthermore, we describe a method of constructing exact, low-rank stabilizer decom-
+positions of |ψ⟩⊗m, where |ψ⟩ is either a magic state or an equatorial state. For any
+single qubit magic state |ψ⟩, we ﬁnd stabilizer decompositions of |ψ⟩⊗m with 2m log2(3)/4
+terms. This improves on the best known bound of 2 m log2(7)/6. Similarly, for any single
+qubit equatorial state|ψ⟩, we give a stabilizer decomposition of|ψ⟩⊗m with 2m/2 terms. To
+our knowledge no such decompositions were previously known. These results translate to
+milder exponential scaling of the classical resources required for estimating probabilities of
+quantum circuits up to a polynomially small multiplicative error, as well as allowing more
+types of circuits to be simulated in this way.
+We also consider certain obstructions to classical simulations. It has been argued in
+various contexts that contextuality and non-locality hamper classical simulations of quan-
+tum circuits. Linear constraint systems (LCSs) are a generalization of the well-known
+Peres-Mermin magic square, which has been recently used to prove a separation between
+the power of constant depth classical and quantum circuits.
+While binary LCSs have been studied in detail, d-ary LCSs are less well-understood.
+In this thesis we consider linear constraint systems modulo d> 2. We give a simple proof,
+of the previously known fact, that any linear constraint system which admits a quantum
+solution consisting of generalized Pauli observables in odd dimension must be classically
+satisﬁable. We further prove that, for odd d, if a Pauli-like commutation relation between
+two variables in the LCS arises, then it has no quantum solutions in any dimensions, in
+stark contrast to the even d case. We apply this result to various examples, for instance
+showing that many generalizations of the Peres-Mermin magic square do not give rise to a
+quantum vs. classical satisﬁability gap.
+iv
+Acknowledgements
+I would like to thank my supervisor Joseph Emerson and co-supervisor Joel Wallman
+for their continuous help, patience, and support during my graduate program. I also thank
+IQC faculty members Richard Cleve, David Gosset, John Watrous, and William Slofstra
+for being generous with their time and advice. I would also like to thank all the friends
+who made my time in Waterloo an unforgettable experience.
+v
+Dedication
+This thesis is dedicated to my parents.
+vi
+Table of Contents
+List of Tables x
+List of Figures xi
+1 Introduction 1
+1.1 Overview . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 1
+1.2 Organization and contributions of this thesis . . . . . . . . . . . . . . . . . 5
+2 The stabilizer rank and classical simulation of quantum circuits 8
+2.1 Preliminaries . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+2.1.1 Notation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+2.1.2 Stabilizer states and the Cliﬀord group . . . . . . . . . . . . . . . . 8
+2.1.3 The stabilizer rank, the approximate stabilizer rank, and the stabi-
+lizer extent . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+2.1.4 Eﬃcient simulation of Cliﬀord circuits: the phase-sensitive version . 15
+2.2 Classical simulation using stabilizer decompositions . . . . . . . . . . . . . 19
+2.2.1 Overview of known simulation algorithms . . . . . . . . . . . . . . . 20
+2.2.2 Finding exact and approximate low-rank stabilizer decompositions . 23
+3 Improved simulation by Cliﬀord recompilation 28
+3.1 Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+vii
+3.2 Cliﬀord recompilation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+3.3 Cliﬀord decomposition of products of multi-qubit gates . . . . . . . . . . . 31
+3.4 Additive-error approximation of amplitudes . . . . . . . . . . . . . . . . . 36
+3.4.1 A simpliﬁed algorithm for estimating amplitudes . . . . . . . . . . . 37
+3.4.2 A digression on sampling computational paths . . . . . . . . . . . . 37
+3.4.3 Generalizations to other gate sets . . . . . . . . . . . . . . . . . . . 39
+4 Upper bounds on the exact stabilizer rank 43
+4.1 Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 43
+4.2 The stabilizer rank of cat states . . . . . . . . . . . . . . . . . . . . . . . . 44
+4.3 Upper bounds on the stabilizer rank of n copies of single qubit states . . . 47
+4.4 Discussion, conjectures, and open problems . . . . . . . . . . . . . . . . . . 50
+5 The stabilizer rank and continuous-time evolution 54
+5.1 Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 54
+5.2 Cliﬀord decompositions of the time evolution operator . . . . . . . . . . . . 56
+5.3 Simulating continuous-time evolution using stabilizer decompositions . . . 59
+5.4 Discussion and open problems . . . . . . . . . . . . . . . . . . . . . . . . . 61
+6 Linear constraint systems 64
+6.1 Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 64
+6.2 Group theory preliminaries . . . . . . . . . . . . . . . . . . . . . . . . . . . 66
+6.3 Linear constraint systems and solution groups . . . . . . . . . . . . . . . . 67
+6.4 Non-local games constructed from linear constraint systems . . . . . . . . . 68
+6.5 Generalized Pauli observables . . . . . . . . . . . . . . . . . . . . . . . . . 70
+7 No-go theorems for a satisﬁability gap in linear constraint systems 72
+7.1 Introduction . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 72
+7.2 A no-go theorem for a satisﬁability gap using generalized Pauli observables 74
+viii
+7.3 A no-go theorem for a satisﬁability gap with Pauli-like commutation relations 75
+7.4 Examples . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 80
+7.4.1 Magic square modulo prime d> 2 . . . . . . . . . . . . . . . . . . . 80
+7.4.2 Magic pentagram modulo prime d> 2 . . . . . . . . . . . . . . . . 82
+7.4.3 Magic square and pentagram modulo odd, composite d . . . . . . . 84
+8 Concluding remarks and open problems 87
+References 90
+ix
+List of Tables
+2.1 The time cost of performing various phase-sensitive operations on a stabilizer
+state speciﬁed by its CH-form using the methods of [8], described in this
+section. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+7.1 Quantum solutions to a generalized magic square LCS modulo D = 2t,
+for odd (even) t on the left (right). In both cases, the generalized two-
+quDit Pauli operators along every row and column mutually commute, their
+product along the third column is ωtI =−I, and their product along the
+rows and remaining columns is I. This shows that a satisﬁability gap exists
+using n-quDit generalized Pauli operators for every even dimension D. . . 76
+x
+List of Figures
+2.1 The state-injection gadget. A non-Cliﬀord gate A can be applied by con-
+suming an ancilla qubit initialized in the state A|+⟩. If the measurement
+outcome is 0, the gate A is successfully applied to the data qubit. Other-
+wise a correction gate B needs to be applied. If A is in the third level of the
+Cliﬀord hierarchy (such as the T gate), the correction gate B is a Cliﬀord
+gate. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+3.1 Theoretical time cost of simulating various one- and two-qubit exponential
+sequences. The angles are chosen to be equal for simplicity. For a sequence
+of length L, the function f(θ) is the 1-norm of the decomposition of the
+sequence into Cliﬀord gates, and f(θ)1/L is the eﬀective 1-norm per gate.
+The function 2 log(f(θ)1/L) is the contribution of each gate toα, where 2α is
+the exponential scaling factor in the runtime of the simulation. The data is
+obtained using a convex optimization software (CVX with the SDPT3 solver). 34
+4.1 Top: the chain used for proving Theorem 11. There are k vertices andk−1
+edges. Every vertex is a |Ψ6⟩ state and every edge is a ⟨Ψ2| contraction on
+one qubit from each of the vertices it contains. Bottom: the chain used for
+proving Theorem 12. There are 5 k + 1 vertices and k hyper-edges. Every
+vertex is a|Φ6⟩ state and every hyper-edge is a⟨Φ6| contraction on one qubit
+from each of the vertices it contains. . . . . . . . . . . . . . . . . . . . . . 49
+5.1 The exponent as a function of the slicing parameter s for the Trotter-Suzuki
+decomposition and the truncated series decomposition for a collection of
+truncation parametersr. The cost of simulating exp(iHt)|0n⟩ scales linearly
+in ξ. Here γ = 2
+√
+2− 2. For the purpose of illustration we set t = π/4,
+K = 100, and‖a‖1 =Kπ/4. . . . . . . . . . . . . . . . . . . . . . . . . . . 58
+xi
+6.1 Linear constraint systems for the magic square (left) and pentagram (right) [19].
+Each variable can take values modulod. The linear constraints are that the
+values of the variables along a solid (dashed) line add to zero (one) modulo
+d. Note that whether the games are “magic” depends upon the constraints,
+e.g., if all lines are solid then both games are classically satisﬁable. . . . . . 67
+6.2 Quantum solutions for the magic square (left) and pentagram (right) for
+d = 2 [19]. Each vertex is a unitary operator whose eigenvalues are dth
+roots of unity. The operators along a solid (dashed) line multiply to I (−I). 69
+xii
+Chapter 1
+Introduction
+1.1 Overview
+There is overwhelming evidence that quantum computers are more powerful than classical
+computers. This evidence arises from strong complexity-theoretic conjectures, such as
+the non-collapse of the polynomial hierarchy, as well as independently of such conjectures
+in relativized models of computation. Despite this, seemingly innocuous restrictions on
+the quantum computation can make it easy to simulate classically. One of the most well-
+known examples is polynomial-sized quantum circuits consisting of Cliﬀord gates and Pauli
+measurements. Such circuits are eﬃciently simulable by the celebrated Gottesman-Knill
+theorem [1]. Augmenting this model with the ability to implement any non-Cliﬀord gates,
+for example a π/8 Z-rotation on a ﬁxed qubit, allows for universal quantum computation.
+Another example is nearest-neighbour matchgate circuits, which encode the physics of
+non-interacting fermions [2, 3]. Such circuits can be simulated eﬃciently on a classical
+computer, although adding the ability to coherently swap nearest neighbour qubits allows
+for universal quantum computation [4].
+For certain restricted quantum computations that can be simulated classically, the
+associated classical simulation algorithms become ineﬃcient as we relax the restriction.
+For slight deviations the required classical resources may scale exponentially in a diﬀerent
+parameter than the number of qubits. For instance, one can classically simulate ann-qubit
+Cliﬀord circuit augmented with m non-Cliﬀord gates using classical resources that scale as
+4mpoly(n), as shown in Aaranson & Gottesman [5]. Since such circuits are universal for
+quantum computation 1, this allows for classically simulating universal quantum circuits
+1 provided we take m = Ω(n).
+1
+with an amount of resources that scales exponentially only in the number of non-Cliﬀord
+gates. The works of Bravyi, Smith & Smolin [6], Bravyi & Gosset [7], and Bravyi et al
+[8], show that this scaling can be signiﬁcantly ameliorated. For instance, if all non-Cliﬀord
+gates are π/8 Z-rotations, the classical cost scales like 2 γm, where γ≈ 0.228. In practice
+this allows for cheap classical simulations of useful quantum algorithms on as many as 50
+qubits [8].
+This exponential scaling is in fact much milder than recently reported similar Monte
+Carlo methods. These alternative methods are based on importance-sampling the entries
+of the gates in the standard basis [9], quasi-probability distributions [10], robustness of
+magic [11], or Cliﬀord-channel decompositions [12]. The advantage holds even though
+the above mentioned alternatives can only estimate quantum circuit probabilities up to
+inverse-polynomial additive error. In comparison the methods in [7, 8] can do something
+much stronger; estimate probabilities up to inverse-polynomial multiplicative error, and
+approximately sample from the quantum circuit distribution with inverse-polynomial error
+in total variation distance.
+Prior works [6, 7, 8] introduce and study the notion of the stabilizer rank. For a multi-
+qubit quantum state|ψ⟩, the stabilizer rank, denoted χ(ψ) is the minimum integer k such
+that a decomposition of the form
+|ψ⟩ =
+k∑
+i=1
+ci|φi⟩ (1.1)
+exists, where|φi⟩ are multi-qubit stabilizer states, and ci are complex coeﬃcients. Given
+any decomposition of the form in eq. (1.1), the classical cost of simulating measurements
+of|ψ⟩ in the computational basis scales linearly in k, and polynomially in the number of
+qubits, provided we can compute each term eﬃciently. In many interesting cases one can
+ﬁnd decompositions of the form in eq. (1.1) for which k≪ 2n. A decomposition with small
+k is referred to as a low-rank stabilizer decomposition. Occasionally we will also refer to
+it as a sparse stabilizer decomposition.
+The fact that the number of stabilizer states of n qubits grows like 2 n2
+makes it ex-
+tremely challenging to compute low-rank stabilizer decompositions, or to even determine
+whether there is a decomposition of some rank k, even for small k and n. However, when
+the state |ψ⟩ is the output state of a quantum circuit, we can use the structure of the
+circuit to ﬁnd such decompositions.
+One way to do this relies on ﬁnding stabilizer decompositions of tensor product states of
+the form|A⟩⊗m, where|A⟩ is some single qubit state. These can typically be decomposed
+2
+using only 2 βm stabilizer states, for some exponent 0 < β <1. The link between such
+decompositions and quantum circuits comes from considering a gate A such that |A⟩ =
+A|+⟩. Any quantum computation that can be implemented by a circuit of Cliﬀord gates
+and m instances of the gate A can be simulated classically using an amount of resources
+that scales as 2 βm [7, 8]. Reducing the exponent β can be done by ﬁnding a stabilizer
+decomposition of |A⟩⊗r for some small r < musing some number kr of stabilizer terms,
+and then taking an ( m/r)-fold tensor product of the decomposition, which gives β =
+log2(kr)/r. This method is throttled by the diﬃculty of numerically ﬁnding low rank
+stabilizer decompositions even for small r; typically r is at most 6 or 7.
+Another way to ﬁnd sparse stabilizer decompositions relies on an approximate version
+of the stabilizer rank. In this version we allow an error ϵ, and ask for the minimum integer
+k such that
+‖|ψ⟩−
+k∑
+i=1
+ci|φi⟩‖≤ ϵ, (1.2)
+for some stabilizer states|φi⟩ and coeﬃcientsci. Obviously this can only reduce the required
+number of stabilizer terms below what is needed for the exact case.
+Furthermore, starting from an exact decomposition as in eq. (1.1), which may not
+be sparse, Ref. [8] shows that it can be made sparse by picking random terms in an
+importance sampling scheme in a way that produces a low-rank approximation of |ψ⟩.
+This method is known as randomized sparsiﬁcation, and combining it with stabilizer rank
+classical simulations allows for signiﬁcant improvement in the required resources as well
+as in the scope of the type of circuits that can be simulated [8]. Using these methods
+the amount of classical resources scales as ‖c‖2
+1, rather than k, provided we can eﬃciently
+sample the distribution p(i) =|ci|/‖c‖1 and compute|φi⟩ for any given i.
+Most of the ﬁrst part of this thesis discusses various improvements in this framework.
+These improvements translate to reducing the cost of simulating quantum circuits, in
+some situations leading to runtimes that have a milder exponential scaling than previously
+reported.
+In the second part of the thesis, we consider obstructions to eﬃcient classical simu-
+lations. It has been argued in various contexts that quantum computational advantage
+is deeply related to phenomena such as non-locality and contextuality. For instance, it
+is known that the absence of contextuality makes any quantum computation classically
+simulable eﬃciently in a certain restricted setting [13, 14]. Furthermore, it was recently
+shown that the presence of non-local correlations between the qubits in a state generated
+3
+by a constant-depth quantum circuit can thwart constant-depth classical simulations of
+the circuit [15, 16].
+Linear constraint systems (LCS), and their associated non-local games [17, 18], are two
+closely related manifestations of contextuality and non-locality. The idea behind these
+constructions is to start with a system of linear constraints Ax = b over a mathematical
+ﬁeld, and promote the scalar-valued variables to quantum observables while requiring that
+every constraint can be checked by a simultaneous measurement of the observables it
+depends on. A quantum solution is a set of observables over some Hilbert space that
+satisﬁes every constraint. If the system Ax =b has no classical solutions and yet admits a
+quantum solution, we call that a satisﬁability gap. In terms of hidden variable theories a
+satisﬁability gap is a state-independent proof of contextuality [19, 20]. When a satisﬁability
+gap exists in a LCS, one can construct a bipartite non-local game which can be won with
+unit probability by quantum players but not by classical players, a situation sometimes
+referred to as quantum pseudo-telepathy [21].
+Non-local games constructed from LCSs are behind recent breakthroughs in proving a
+separation between ﬁxed-depth classical and quantum computation that is independent of
+complexity-theoretic conjectures [15, 16]. Certain non-local correlations can arise between
+the registers of a ﬁxed-depth quantum circuit that are impossible to produce by any ﬁxed-
+depth classical circuit, even if the former is restricted to short-range gates and the latter is
+allowed arbitrary long-range gates, and even if noise is present [16]. The proof of this state-
+ment is based on considering correlations that win certain variants of the Peres-Mermin
+magic square game, which is in fact the canonical example of a LCS with a satisﬁability
+gap.
+Non-local games constructed from LCSs have also been instrumental in signiﬁcant
+recent progress in understanding quantum non-locality. An important problem in non-
+locality is to distinguish sets of quantum correlations deﬁned using diﬀerent models of
+entanglement, for instance the tensor-product and the commuting-operator models [22].
+In this framework the use of LCSs led to ground-breaking results [23, 24, 25] 2.
+The Pauli group plays an interesting role in the framework of LCSs. The commutation
+relation UV =−VU encodes the simplest classically inconsistent linear constraint on two
+binary variables. Whenever such relations appear in the so-called solution group of a
+quantum-feasible LCS, it implies a satisﬁability gap. The results in [24, 25] rely in an
+important way on embedding this commutation relation into certain families of binary
+2A variant of such questions is equivalent to one of the most famous and long-standing conjectures in
+operator theory, namely Connes’ embedding conjecture. This conjecture was very recently refuted using a
+construction involving certain bipartite quantum nonlocal games [26] (although not of the LCS variety).
+4
+LCSs.
+This thesis considers a generalization of the Pauli group for higher dimensional systems,
+known as the Weyl-Heisenberg group. While other generalizations of the qubit Pauli group
+exist, the Weyl-Heisenberg group is arguably the most natural one, since it preserves the
+commutativity structure and error-correction properties of the qubit Pauli group [27]. We
+consider how the Weyl-Heisenberg group relates to d-ary LCSs, i.e. those deﬁned modulo
+some integer d. When the dimension of the quantum system is odd, it is known that
+one cannot have a state-independent proof of contextuality using these generalized Pauli
+observables [13, 28].
+Somewhat more surprisingly, when themodulusd is odd, and regardless of the quantum
+dimension, we ﬁnd in this thesis that any commutation relation of the generalized Pauli
+group,UV =ωjVU , where ω is a dth root of unity and j⁄= 0, cannot be embedded in the
+solution group of a LCS if a quantum solution exists in any (inﬁnite or ﬁnite) dimension.
+In other words, no satisﬁability gap can ever arise from classically inconsistent relations of
+that form, in stark contrast to the binary case.
+Another piece of the puzzle is revealed by the so-called discrete Wigner function. For
+qudits of odd-prime dimension, it is known that any quantum circuit consisting of mea-
+surement of generalized Pauli observables and unitary transformations that preserve them
+(i.e. the qudit Cliﬀord group) can be simulated eﬃciently using a non-negative discrete
+Wigner function. For such systems the discrete Wigner function provides a local hidden
+variable theory [19, 20]. In other words, correlations produced from such circuits cannot
+produce quantum correlations that win any nonlocal game. Remarkably, the simulation
+algorithm based on the discrete Wigner function can be executed in the same depth as the
+quantum circuit, which precludes any advantage for ﬁxed depth quantum circuits of this
+type, i.e. it precludes any construction such as in Refs. [15, 16].
+1.2 Organization and contributions of this thesis
+We begin in Chapter 2 by reviewing preliminary material related to stabilizer rank methods,
+and summarizing important tools introduced in [7, 8].
+In Chapter 3, we consider the problem of computing stabilizer decompositions of the
+output state of a quantum circuit consisting of 𝓁 gates in total, m of which are non-
+Cliﬀord gates. We describe an improved method of performing randomized sparsiﬁcation,
+which reduces the time of cost of computing a single term of the stabilizer decomposition
+from O(𝓁n2) to O(mn2). Since this operation has to be repeated for each term in the
+5
+decomposition, the reduction in runtime can be signiﬁcant if 𝓁≫ m. This method uses
+a certain re-writing of the circuit, which also allows for exploiting more sparse Cliﬀord
+decompositions of products of non-Cliﬀord gates. In some cases this gives a signiﬁcant
+amelioration of the exponential scaling of the required classical resources. We suggest a
+straight-forward simulation using importance-sampling Monte Carlo to estimate the circuit
+amplitudes up to additive error. Such estimates can be used with the Markov Chain Monte
+Carlo variant of stabilizer rank methods, as shown in [8]. We brieﬂy consider generalizing
+this method of estimating amplitudes to other gate sets. The results in Chapter 3 are
+published in [29].
+In Chapter 4, we describe a method of constructing exact, low-rank stabilizer decom-
+positions of |ψ⟩⊗m, where |ψ⟩ is a single qubit state. We focus on the case where |ψ⟩ is
+either a magic state or an equatorial state.
+Magic states are the non-stabilizer eigenstates of single qubit Cliﬀord unitaries [30].
+They come in two ﬂavors, depending on whether they are Cliﬀord-equivalent to the T
+state|T⟩ = 2−1/2(|0⟩ +eiπ/4|1⟩) or the face state |F⟩ = cos(β)|0⟩ +eiπ/4 sin(β)|1⟩, where
+β is an angle such that cos(2 β) = 1/
+√
+3. Equatorial states are those of the form |θ⟩≡
+2−1/2(|0⟩ +eiθ|1⟩).
+We ﬁnd stabilizer decompositions of |T⟩⊗m and|F⟩⊗m with 2m log2(3)/4 terms. This
+improves on the best known bound of 2m log2(7)/6, and is based on a stabilizer decomposition
+of|T⟩⊗6 with six terms. Previously [6] the stabilizer rank of |T⟩⊗6 was conjectured to be
+seven (which this result refutes), and the stabilizer rank of the two types of magic states
+was conjectured to be the same (which this result provides further evidence for). Also, for
+any equatorial state|θ⟩ we give a stabilizer decomposition of|θ⟩⊗m with 2m/2 terms. To our
+knowledge no such decompositions were previously known. Exact stabilizer decompositions
+of this form allow us to estimate probabilities of quantum circuits up to polynomially small
+multiplicative error, which we cannot do with approximate stabilizer decompositions. Our
+results translate to milder exponential scaling of the classical resources required for this
+task, as well as allowing more types of circuits to be simulated in this way.
+The results in Chapter 4 are based on unpublished joint work with David Gosset 3 and
+Hakop Pashayan 4.
+In Chapter 5, we consider using stabilizer decompositions to simulate the time evolution
+under a time-independent spin Hamiltonian, that is, to simulate the state eiHt|0⟩⊗n. If the
+3Institute for Quantum Computing, Waterloo, Ontario, and the Department of Combinatorics and
+Optimization, University of Waterloo, Ontario.
+4Perimeter Institute, Waterloo, Ontario, and the Institute for Quantum Computing, Waterloo, Ontario.
+6
+Hamiltonian is given as a sum of operators that are easy to exponentiate,
+H =
+K∑
+j=1
+ajAj, (1.3)
+then this method allows for approximate-sampling from the probability distribution asso-
+ciated with measuring any subset of the qubits in the computational basis in time which
+scales as exp(γt‖a‖1), where γ is a constant that depends on which Lie product formula is
+used to approximate the time evolution, and on the sparsity of the Cliﬀord decomposition
+of the associated circuit. For example, using a decomposition of the Hamiltonian into
+the Pauli basis together with the ﬁrst-order Suzuki formula gives γ = 2
+√
+2− 2≈ 0.83.
+We describe various ways to reduce γ. This kind of simulation may be useful for short
+time evolution when exp(γt‖a‖1)≪ 2n, and reducing γ allows longer times for the same
+computational budget.
+In the last two chapters we consider linear constraint systems (LCS). We start by re-
+viewing background material in Chapter 6, then in Chapter 7 we consider linear constraint
+systems modulo an integer d >2. First we give a simple proof, of the previously known
+fact [13, 28], that any linear constraint system which has a generalized Pauli solution of
+odd dimension must be classically satisﬁable. We further prove that, for odd d, embedding
+a Pauli-like commutation relation between any two elements of the solution group implies
+that the LCS has no quantum solutions in any dimensions, and therefore cannot display
+a satisﬁability gap. We apply this result to various examples, for instance showing that
+many generalizations of the Peres-Mermin magic square and pentagram cannot have a
+satisﬁability gap. The results in Chapter 7 are published in [31].
+7
+Chapter 2
+The stabilizer rank and classical
+simulation of quantum circuits
+2.1 Preliminaries
+2.1.1 Notation
+This thesis deals with ﬁnite-dimensional quantum systems. We use the bra-ket notation to
+denote elements of thed-dimensional complex vector space Cd. For n-qubits the dimension
+is 2n, and we identify the standard 0 , 1 basis with elements of the binary vector space
+Fn
+2 ={0, 1}n. We use small letters x,y,... to denote bit-strings in Fn
+2, but reserve capital
+letters A,B,... to denote operators on Cd.
+2.1.2 Stabilizer states and the Cliﬀord group
+Stabilizer states and the Cliﬀord group are ubiquitous in the theory of quantum informa-
+tion. In a nutshell, the Cliﬀord group of n qubits is a ﬁnite subgroup of the unitary group
+U(2n), and the set of stabilizer states is the orbit of the state |0⟩⊗n under this group.
+More speciﬁcally, we start by deﬁning the usual single qubit Pauli matrices
+I =
+(1 0
+0 1
+)
+, X =
+(0 1
+1 0
+)
+, Y =
+(0 −i
+i 0
+)
+, Z =
+(1 0
+0 −1
+)
+. (2.1)
+8
+Then-qubit Pauli groupP(n) consists of all n-fold tensor products of Pauli matrices with
+an arbitrary global phase U(1). The Cliﬀord group of n qubitsC(n) is deﬁned as the
+subgroup of unitaries which preserveP(n), i.e.
+C(n) :={U∈U (2n) : UPU†∈P (n) for all P∈P (n)}. (2.2)
+The set of n-qubit stabilizer statesS(n) is the orbit
+S(n) :={U|0⟩⊗n : U∈C (n)}. (2.3)
+This deﬁnition coincides with the usual deﬁnition of a stabilizer state as a simulta-
+neous +1 eigenstates of a maximal stabilizer group, that is, a subgroup generated by n
+independent, Hermitian, and mutually commuting Pauli operators.
+Another deﬁnition of stabilizer states, which we will ﬁnd useful in proving some results
+later, is based on characterizing both the support of these states in the computational basis
+and the set of allowed relative phases.
+Namely, it is known that the support of a stabilizer state in the computational basis
+is always an aﬃne subspace A⊆ Fn
+2
+1. The allowed relative phases between the states
+in the support of a stabilizer state take the form of linear and quadratic phases [32].
+Speciﬁcally, the phase on the component x∈ A is given by i𝓁(x)(−1)q(x), where q is a
+quadratic polynomial on Fn
+2, and 𝓁 is a linear function on Fn
+2. A stabilizer state is then
+determined by the triplet (A,q,𝓁 );
+|A,q,𝓁⟩ := 1√
+|A|
+∑
+x∈A
+i𝓁(x)(−1)q(x)|x⟩. (2.4)
+One can easily check that Cliﬀord unitaries preserve this form up to a global phase.
+For instance, the set of gates
+H = 1√
+2
+(1 1
+1 −1
+)
+, S =
+(1 0
+0 i
+)
+, CZ =
+
+
+1 0 0 0
+0 1 0 0
+0 0 1 0
+0 0 0 −1
+
+, (2.5)
+on all qubits (for H andS) and pairs of qubits (for CZ ), generate the Cliﬀord group, and
+one can quickly check that they preserve the form (2.4).
+1Recall that an aﬃne subspace of Fn
+2 is a translated linear subspace, i.e. a set of the form A =V⊕a
+where V is a linear code and a is a translation vector.
+9
+Yet another equivalent classical description of stabilizer states is given by the so-called
+CH-form. This description is suitable for certain tasks, such as computing phase-sensitive
+Cliﬀord circuit amplitudes, which is a key component in the classical simulation schemes
+in [8] and in this thesis.
+The CH-form description of a stabilizer state is given by a tuple ( w,s,h,U ), where
+w∈ C is a complex number, s,h∈ Fn
+2 are binary vectors, and U is a circuit consisting of
+gates from the gate set {CNOT, CZ, S}, where
+CNOT 1,2 =
+
+
+1 0 0 0
+0 1 0 0
+0 0 0 1
+0 0 1 0
+
+. (2.6)
+Note that any such U satisﬁes
+U|0⟩⊗n =|0⟩⊗n, (2.7)
+which ﬁxes the global phase convention. The vector representation of the stabilizer state
+associated with the tuple (w,s,h,U ) is given by
+|w,s,h,U ⟩ :=wUH (h)|s⟩, (2.8)
+where H(h) acts as the Hadamard gate on qubit i if hi = 1 and as the identity otherwise.
+Note that the circuit U can be stored using O(n2) bits in the form of a stabilizer tableau
+specifying its action on Paulis X1,...,X n,Z 1,...,Z n, see Ref. [5]. Hence storing the CH-
+description of an n-qubit stabilizer state requires O(n2) bits of classical memory. This is
+the same cost as the more standard approach in [5], but it allows us to keep track of the
+global phase in the simulation by updating w.
+2.1.3 The stabilizer rank, the approximate stabilizer rank, and
+the stabilizer extent
+In this subsection we deﬁne the stabilizer rank and related quantities, and discuss some of
+their properties and relations.
+Deﬁnition 1. The stabilizer rank of a quantum state|ψ⟩, denoted byχ(ψ), is the minimum
+number of terms in a stabilizer decomposition of the state.
+10
+In other words, χ(ψ) is the minimum integer k such that there exists a superposition
+|ψ⟩ =
+k∑
+i=1
+ci|φi⟩, (2.9)
+where|φi⟩ are stabilizer states and ci are complex coeﬃcients. The stabilizer rank is
+sub-multiplicative under the tensor product
+χ(ψ⊗φ)≤χ(ψ)χ(φ), (2.10)
+since we can decompose each state separately and take the tensor product of the de-
+compositions. It is also invariant under Cliﬀord operations and sub-multiplicative under
+projections onto stabilizer codes, that is
+χ(Cψ) =χ(ψ), χ (Πψ)≤χ(ψ), (2.11)
+for any Cliﬀord C and projector Π onto a stabilizer code.
+The stabilizer rank of ann-qubit state is extremely diﬃcult to compute even for product
+states and modest n. The diﬃculty comes from having to check all k-tuples of stabilizer
+states to determine whether a decomposition with k terms exists. The number of n-qubit
+stabilizer states grows like 2n2
+, making such brute force technique impractical. Numerical
+methods for computing χ(ψ) (and ﬁnding low rank decompositions) have been proposed
+in [6] and [8], based on a heuristic simulated annealing algorithm, but these methods miss
+the mark for product states on as low as six qubits, as we will elaborate on in Chapter 4.
+Form copies of a state ψ, sub-multiplicativity implies that
+χ(ψ⊗m)≤χ(ψ)m.
+In general, we can do much better than a naive product decomposition. An important
+example is the quantum state 2
+|T⟩ = 2−1/2(|0⟩ +eiπ/4|1⟩). (2.13)
+2This state is related to the T gate,
+T =
+( 1 0
+0 e
+iπ
+4
+)
+, (2.12)
+via|T⟩ = T|+⟩. The state |T⟩ is Cliﬀord-equivalent to a state known as the H-type magic state (the
++1 eigenstate of Hadamard), and in the past has been referred to as |H⟩ (incidentally the second type of
+magic state, the so-called face state, has been denoted by |T⟩). In this thesis we use |T⟩ for the ﬁrst type,
+and|F⟩ for the second type.
+11
+Two copies of|T⟩ can be written as a sum of two stabilizer states:
+|T⟩⊗2 = 1
+2
+(
+|00⟩ +i|11⟩
+)
++ eiπ/4
+2
+(
+|01⟩ +|10⟩
+)
+. (2.14)
+This makes it possible to decompose |T⟩⊗m using only k = 2m/2 stabilizer terms:
+|T⟩⊗m =
+(
+|T⟩⊗2)⊗m/2
+. (2.15)
+Better decomposition strategies allow us to achieve k = 2 αm where α = log 2(3)/4 ≈
+0.3962, as we shall prove in Chapter 4 of this thesis. An optimal decomposition achieves
+k =χ(T⊗m); the stabilizer rank of m copies of|T⟩. Conjectures aside, the value of χ(T⊗m)
+is currently unknown for m > 3, and determining its asymptotic scaling is one of the
+biggest open problems in this ﬁeld.
+In the approximate version of the stabilizer rank, our goal is to approximate a state ψ
+up to error ϵ by a superposition of stabilizer states. That is, to ﬁnd ˜ψ such that
+‖ψ− ˜ψ‖≤ ϵ | ˜ψ⟩ =
+k∑
+i=1
+ci|φi⟩, (2.16)
+where φi are stabilizer states.
+Deﬁnition 2. The approximate stabilizer rank , χϵ(ψ), is deﬁned as the minimum k for
+which (2.16) can hold.
+Clearly,χϵ(ψ)≤ χ(ψ) for any state ψ and ϵ >0. Interestingly, it turns out that the
+approximate stabilizer rank is upper bounded by a quantity which is easier to handle,
+namely the stabilizer extent [8].
+Deﬁnition 3. The stabilizer extent ofψ, denoted byξ(ψ), is the minimum 1-norm squared
+of a vector of coeﬃcients c∈ Ck in a stabilizer decomposition of ψ.
+Here the 1-norm of a vector c∈ Ck is‖c‖1 =|c1| +··· +|ck|. In other words, the
+stabilizer extent is the solution to the (convex) optimization problem:
+minimize ‖c‖2
+1
+subject to |ψ⟩ =
+∑
+i
+ci|φi⟩
+φi are stabilizer states (2.17)
+12
+This optimization is slightly less computationally demanding than computing the stabilizer
+rank. It has also led to very interesting insights. For instance, by examining its dual
+program it was shown in [8] that, for a large class of quantum states, the stabilizer extent
+is multiplicative under the tensor product, i.e.
+ξ(ψ⊗m) =ξ(ψ)m. (2.18)
+The class of states for which this is known to hold is called stabilizer-aligned states, and
+includes all states ψ of three or less qubits. Interestingly, for n >3 not all n qubit states
+are stabilizer-aligned.
+The main result relating the approximate stabilizer rank of a state to its stabilizer
+extent is known as the randomized sparsiﬁcation lemma.
+Lemma 4 (Randomized Sparsiﬁcation, Ref. [8]) . For any quantum state ψ and ϵ >0, it
+holds that
+χϵ(ψ)≤ϵ−2ξ(ψ). (2.19)
+Proof sketch. Suppose we’re given a stabilizer decomposition
+|ψ⟩ =
+∑
+i
+ci|φi⟩. (2.20)
+Without loss of generality, we can assume that theci are real and positive by absorbing all
+phases into the stabilizer statesφi. Consider the random vector|wN⟩ obtained by averaging
+N random vectors of the form ‖c‖1|φ⟩, where|φ⟩ is chosen independently from the set of
+stabilizer states{φi} according to the probability distribution ci/‖c‖1. The average of this
+random vector is |ψ⟩. Using standard probability tail bounds, one can show that, with
+high probability,
+‖|ψ⟩−| wN⟩‖≤ ϵ
+provided that N≥‖ c‖2
+1ϵ−2. This implies that there exists a quantum state, | ˜ψ⟩, of the
+form
+| ˜ψ⟩ =
+⌈‖c‖2
+1ϵ−2⌉∑
+j=1
+αj|θj⟩, (2.21)
+where θj are stabilizer states, such that ‖ ˜ψ−ψ‖≤ ϵ.
+13
+A more detailed version of the above proof can be found in Ref. [8]. This construction
+plays a key role in the classical simulation schemes we describe in this thesis.
+The three quantities we have deﬁned in this section, the stabilizer rank, approximate
+stabilizer rank, and stabilizer extent, can all be deﬁned for unitary operators as well.
+For example, we may deﬁne the stabilizer rank of a unitary U as the minimum number
+of Cliﬀord unitaries in a linear decomposition of U. However, it turns out that this is
+not the most general thing we can do. For instance, we can also allow the terms of the
+decomposition to be projectors onto stabilizer codes, or even products of such projectors.
+The point is that such operators preserve stabilizer states, and can be used just as well as
+Cliﬀords for classical simulation purposes.
+Such generalized notions of the stabilizer rank will not be discussed in this thesis, with
+one exception, namely the stabilizer extent. For a unitaryU we deﬁneξ(U) as the minimum
+‖c‖2
+1 for any vector of coeﬃcients in a linear Cliﬀord decomposition of U. For the cases we
+consider, we ﬁnd that nothing is gained by allowing stabilizer projectors or their products,
+i.e. that the minimum 1-norm is always achieved with a decomposition in which every
+term is a Cliﬀord unitary. For this reason we refrain from making that generalization in
+this thesis.
+Simulating a quantum circuit consisting of Cliﬀord gates augmented with m T gates
+can be done classically in time that scales asξ(T )m≈ 20.228m [8]. Here the T gate is deﬁned
+as
+T =
+(1 0
+0 eiπ/4
+)
+. (2.22)
+Note that for the closely related T state|T⟩ = T|+⟩, we have ξ(T ) = ξ(|T⟩). More
+generally this holds for diagonal gates from the third level of the Cliﬀord hierarchy [8].
+For unitary gates, the stabilizer extent is sub-multiplicative under the tensor product:
+ξ(A⊗B)≤ξ(A)ξ(B), (2.23)
+as well as under matrix multiplication;
+ξ(AB)≤ξ(A)ξ(B). (2.24)
+In Chapter 3, we will show how a certain re-writing of the quantum circuit allows us to
+take advantage of this fact, resulting in a milder exponential scaling of the time cost of
+classically simulating certain quantum circuits.
+14
+Operation Time cost
+PHASE, CNOT, or CPHASE gates O(n)
+Hadamard gates O(n2)
+Multi-qubit rotations exp(iπP/4) O(n2)
+Post-measurement state after measuring b qubits O(bn2)
+Compute an amplitude⟨x|φ⟩ O(n2)
+Table 2.1: The time cost of performing various phase-sensitive operations on a stabilizer
+state speciﬁed by its CH-form using the methods of [8], described in this section.
+2.1.4 Eﬃcient simulation of Cliﬀord circuits: the phase-sensitive
+version
+The Gottesman-Knill theorem gives an eﬃcient classical simulation of quantum circuits
+consisting of Cliﬀord gates acting on stabilizer state inputs [1]. The classical algorithm
+is based on storing the quantum state in terms of generators of its stabilizer group, and
+updating the generators as Cliﬀord gates are applied. Such a description of the state is
+correct up to an irrelevant global phase. In this section we describe a recent variant of
+these simulations which also keeps track of the global phase on the quantum state.
+Keeping track of the global phase is necessary to maintain coherence between the terms
+in a stabilizer decomposition of a non-stabilizer state, which is a prerequisite for the simu-
+lation schemes in this thesis. Peculiarly, tracking the global phase adds a considerable time
+requirement. For instance, it increases the number of basic operations required to update
+the description of a stabilizer state under a single qubit Cliﬀord gate from O(n) to O(n2).
+In the rest of this subsection we give an overview of how to perform Cliﬀord operations
+and measurement updates while keeping track of the global phase. We describe these
+update rules in quite some detail, although we leave out the proof of one key lemma
+(Lemma 5). The interested reader can go to [8] for further reference. The impatient reader
+can skip to the next section. For convenience the time cost of the update rules described
+in this section is summarized in Table 2.1.
+Unitary updates
+Recall that the CH description of a stabilizer state is a tuple ( w,s,h,U ), where w is a
+complex scalar, s and h are n-bit strings, and U is a Cliﬀord circuit consisting of gates
+15
+from the set J ={CZ,CX,S }. The correspondence is given by
+|w,s,h,U ⟩ =wUH (h)|s⟩. (2.25)
+Also recall that U is stored in classical memory in the form of a stabilizer tableau,
+i.e. a binary matrix of 2 n rows where each row speciﬁes the Pauli operator UPU† with P
+ranging over X1,...,X n,Z 1,...,Z n.
+Given a stabilizer state speciﬁed by its CH-form (w,s,h,U ), and a Cliﬀord gateC from
+the gate set{CZ,CX,S,H }, our goal is to compute ( w′,s′,h′,U′) such that
+C|w,s,h,U ⟩ =|w′,s′,h′,U′⟩. (2.26)
+If the gate C itself belongs to J, only U needs to be updated. We simply compute the
+tableau of the circuit U′ = CU by computing the action of C on at most 2 n Pauli op-
+erators, using standard binary linear algebra. Since C acts on O(1) qubits, the update
+(w,s,h,U )→ (w,s,h,U ′) can be computed in time O(n).
+If C is a Hadamard gate on one of the qubits, for example C = Hj, the situation is
+more complicated. The identity
+Hj = 1√
+2(Xj +Zj) (2.27)
+implies
+Hj|w,s,h,U ⟩ = 1√
+2 (Xj|w,s,h,U ⟩ +Zj|w,s,h,U ⟩). (2.28)
+By deﬁnition,|w,s,h,U ⟩ =wUH (h)|s⟩, and therefore
+Xj|w,s,h,U ⟩ =wUH (h)P|s⟩
+Zj|w,s,h,U ⟩ =wUH (h)Q|s⟩
+where P = (UH (h))†Xj(UH (h)) and Q = (UH (h))†Zj(UH (h)) are Pauli operators. Note
+that we can compute P and Q in time O(n2) using the tableau associated with U and
+the fact that H permutes X and Z. We can then compute strings x,z ∈ Fn
+2 and integers
+p,q∈ Z4, in time O(n), such that P|s⟩ =ip|x⟩ and Q|s⟩ =iq|z⟩. We now have
+Hj|w,s,h,U ⟩ =ipwUH (h)
+(|x⟩ +iq−p|z⟩√
+2
+)
+. (2.29)
+To proceed we need to use a certain decomposition of Cliﬀord circuits.
+16
+Lemma 5 (Proposition 4 in [8]). Letx,z∈ Fn
+2, x⁄=z. For any h∈ Fn
+2 and m∈ Z4, there
+exists a circuit V consisting of O(n) gates from the set {CZ,CX,S }, a vector h′∈ Fn
+2,
+and a complex number α∈ C, such that
+H(h)
+(|x⟩ +im|z⟩√
+2
+)
+=αVH (h′)|s′⟩. (2.30)
+Moreover,V,h′, and α, can be computed in time O(n).
+Applying Lemma 5 to the right-hand side of eq. (2.29) yields
+Hj|w,s,h,U ⟩ =
+{
+(ipe±iπ/4w)UH (h)|x⟩ if x =z
+(αipw)UVH (h⊕h′)|s′⟩ if x⁄=z, (2.31)
+whereV,α, andh′ are the items referred to in Lemma 5. Finally, computing the stabilizer
+tableau ofU′ :=UV given that ofU can be done in time O(n2), since there are O(n) gates
+in V each of which take time O(n) to absorb into U.
+To conclude, we can update the CH description of a stabilizer state under the action
+of a Hadamard gate, i.e. compute ( w′,s′,h′,U′) such that Hj|w,s,h,U ⟩ =|w′,s′,h′,U′⟩,
+in time O(n2).
+Another set of Cliﬀord gates which we make use of in this chapter are Pauli rotations
+of the type
+{exp (i(π/4)P ) :P∈P (n),P =P†}. (2.32)
+These unitaries typically entangle many qubits, but it turns out that one can update
+the CH-description of a stabilizer state under such gates in time O(n2), the same time
+requirement for a single qubit Hadamard gate.
+The above assertion follows immediately from Lemma 5: given a stabilizer state (w,s,h,U )
+and a Pauli P we can compute another Pauli P′ in time O(n2) such that
+eiπ
+4P|w,s,h,U ⟩ =wUH (h)eiπ
+4P′
+|s⟩, (2.33)
+namely, P′ = (UH (h))†P (UH (h)). We can then compute a string z and an integer p
+such that eiπ
+4P′
+|s⟩ = 2−1/2(|s⟩ +ip|z⟩), and proceed similarly to the Hadamard case, using
+Lemma 5 if necessary.
+17
+Measurement updates
+Next we summarize how to compute the CH-form of the post-measurement state after
+measuring a subset of the qubits and obtaining some outcome. For any Hermitian Pauli
+R, projecting onto the + eigenspace of R corresponds to an update rule ( w,s,h,U )→
+(w′,s′,h′,U′) such that
+1
+2(I +R)|w,s,h,U ⟩ =|w′,s′,h′,U′⟩. (2.34)
+As before, we have
+R|w,s,h,U ⟩ =wRUH (h)|s⟩ =wUH (h)R′|s⟩ (2.35)
+where R′ = (UH (h))†R(UH (h)) is a Pauli operator that can be computed in time O(n2).
+We now have
+1
+2(I +R)|w,s,h,U ⟩ =wUH (h)(|s⟩ +ir|s′⟩) (2.36)
+where r∈ Z4 and s′∈ Fn
+2 satisfy R|s⟩ =ir|s′⟩. If s =s′ the update is trivial, and if s⁄=s′
+it reduces to Lemma 5. Therefore computing ( w′,s′,h′,U′) takes time O(n2).
+Let Πx denote the projector onto the subspace corresponding to some computational
+basis outcome x. In other words Π x acts as|x⟩⟨x| on the measured qubits and as identity
+on the rest of the qubits. We have
+Πx = 2−n′
+n′
+∏
+j=1
+(I + (−1)xjZj), (2.37)
+where n′ is the number of qubits being measured. Computing the CH-form of the post-
+measurement state therefore takes time O(n′n2).
+Computing amplitudes
+Finally, let’s describe how to compute an amplitude of a stabilizer state given its CH-
+form. Namely, we want to compute ⟨x|w,s,h,U ⟩, where x∈ Fn
+2. This can be done in
+time only O(n2), compared to the O(n3) required to update the CH-description using the
+post-measurement update rules.
+18
+We have
+⟨x|w,s,h,U ⟩ =w⟨x|UH (h)|s⟩
+=w⟨0n|(U†X(x)U)H(h)|s⟩
+=w⟨0n|QH(h)|s⟩ (2.38)
+for some Pauli Q which can be computed in time O(n2). Here we crucially made use of
+the fact that U|0n⟩ =|0n⟩. Writing Q =ipZ(t)X(u) we obtain
+⟨x|w,s,h,U ⟩ =wip⟨0n|X(u)H(h)|s⟩
+= 2−|h|/2wip
+∏
+j:hj =0
+⟨uj|sj⟩
+∏
+j:hj =1
+(−1)hjsj (2.39)
+Once Q is computed, the above expression can be evaluated in time O(n). Thus the total
+runtime for computing an amplitude of the state |w,s,h,U ⟩ is O(n2).
+2.2 Classical simulation using stabilizer decomposi-
+tions
+In this section, we give an overview of a family of techniques for classically simulating
+quantum circuits based on stabilizer decompositions. These techniques are useful when
+the number of non-Cliﬀord gates in the circuit is roughly the same as the number of
+qubits. The discussion presented in this section is based on Refs. [7, 8].
+Let U be a circuit acting on n qubits initialized in the state |0⟩⊗n. The methods
+described in this section pertain to two diﬀerent simulation tasks;
+1. Estimating the probability P (x) of obtaining outcome x∈ Fs
+2 when measuring a
+subset of s≤n qubits of the state U|0⟩⊗n, and
+2. Sampling an outcome x∈ Fs
+2 according to a distribution ˜P (x) that approximates
+P (x) in total variation distance.
+The exact versions of these tasks are colloquially known as strong and weak simulations,
+respectively. We caution that these terms can be somewhat misleading. While it is true
+that the ability to compute the quantum circuit probabilities exactly can be used to sam-
+ple the circuit distribution, this implication hinges on the ability to compute marginal
+19
+probabilities. For example, for a given quantum circuit U, a classical simulator that can
+only compute P (x) =|⟨x|U|0n⟩|2 for x∈ Fn
+2 needs to be run exponentially many times to
+produce a sample from the circuit distribution.
+A key component in the simulation schemes based on stabilizer decompositions is a
+randomized algorithm for approximating the norm of a linear combination of stabilizer
+states.
+Lemma 6 (Refs. [7, 8]) . Let|ψ⟩∈ (C2)⊗n be given as a linear combination of stabilizer
+states;
+|ψ⟩ =
+k∑
+i=1
+ci|φi⟩. (2.40)
+There exists a randomized classical algorithm which queries the terms {(ci,φi)} one at a
+time and with probability at least 1−δ outputs an estimate b which approximates‖ψ‖2 up
+to multiplicative error ϵ, i.e.
+(1−ϵ)‖ψ‖2≤b≤ (1 +ϵ)‖ψ‖2. (2.41)
+The runtime of the algorithm is
+O(kn3ϵ−2 logδ−1). (2.42)
+The randomized algorithm in Lemma 6 is based on computing inner products of |ψ⟩
+with uniformly random stabilizer states. It relies on two key properties of stabilizer states.
+First, computing an inner product ⟨φi|φj⟩ between two stabilizer states can be performed
+in time O(n3). Second, for a uniformly random stabilizer state |θ⟩ and any ﬁxed vector
+|v⟩, the random variable 2 n|⟨θ|v⟩|2 has mean and standard deviation both equal to ‖v‖2.
+This follows from the fact that stabilizer states form a 2-design, but being a 2-design is
+not necessary for this to hold 3. Thus with high probability the average of a large number
+of evaluations of this random variable approximates‖v‖2 with a small multiplicative error
+(for instance by a standard application of Chebyshev’s inequality).
+2.2.1 Overview of known simulation algorithms
+Estimating probabilities with bounded multiplicative error
+Lemma 6 can be used to estimate outcome probabilities of a quantum circuit U given a
+stabilizer decomposition of the output state. To see this, suppose we’re given a stabilizer
+3It was shown in [8] that in fact one can take a much smaller subset of stabilizer states, namely the
+so-called equatorial stabilizer states.
+20
+decomposition
+U|0⟩⊗n =
+k∑
+i=1
+ci|φi⟩. (2.43)
+Suppose that a subset of s≤ n qubits is measured in the computational basis, and that
+we want to estimate the probability P (x) of some outcome x∈ Fs
+2. The probability P (x)
+is equal to the square of the norm of the vector Π xU|0⟩⊗n, where Πx is the projector that
+acts as |x⟩⟨x| on the measured qubits and as identity operator on the rest. Using the
+phase-sensitive measurement updates of section 2.1.4, we can compute the CH-form of
+the vector Πx|φi⟩ with its global phase in time O(sn2), and therefore we can compute a
+stabilizer decomposition
+ΠxU|0⟩⊗n =
+k∑
+i=1
+ciΠx|φi⟩ (2.44)
+in time O(ksn2). Combining this with Lemma 6, we obtain an estimate of P (x), correct
+up to multiplicative error ϵ, in time O(ksn2) +O(kn3ϵ−2 logδ−1).
+Approximate sampling from the circuit distribution
+Now we brieﬂy describe how the above method for estimating outcome probabilities P (x)
+with bounded multiplicative error can be used to sample bit strings x∈ Fs
+2 from a proba-
+bility distribution which approximates P . Here s is the number of qubits measured. More
+speciﬁcally, the goal is to sample x∈ Fs
+2 according to a distribution ˜P such that
+‖P− ˜P‖1 := 1
+2
+∑
+x∈Fs
+2
+|P (x)− ˜P (x)|<ϵ. (2.45)
+Suppose we are given a stabilizer decomposition of the output state of the circuit
+U|0n⟩ =
+k∑
+i=1
+ci|φi⟩. (2.46)
+Using the chain rule for probabilities we have, for x = (x1,...,x s)∈ Fs
+2,
+P (x) =P (x1)P (x2|x1)P (x3|x1,x 2)...P (xs|x1,...,x s−1). (2.47)
+21
+The idea is to sample x1 according to the distribution ˜P (x1) obtained by estimating P (x1)
+using eq. (2.44) and Lemma 6, then sample x2 according to the distribution ˜P (x2|x1)
+obtained by estimating P (x2|x1), and so forth. This produces a sample x∈ Fs
+2 according
+to a certain distribution ˜P (x).
+To ensure that ˜P satisﬁes eq. (2.45), the multiplicative error on the estimates of each
+conditional probability must be small enough. Each conditional probability can be written
+as
+P (xi|x1,...,x i−1) = P (x1,...,x i−1,xi)
+P (x1,...,x i−1) . (2.48)
+Let ν be the multiplicative error on the approximations of each of the numerator and de-
+nominator. Then the multiplicative error on the ratio is at most 2ν, and the multiplicative
+error on approximating P (x) by
+˜P (x) := ˜P (x1) ˜P (x2|x1) ˜P (x3|x1,x 2)... ˜P (xs|x1,...,x s−1) (2.49)
+is at most O(sν). To ensure that eq. (2.45) holds, it’s enough to pick ν =O(ϵ/s).
+The scaling of the total runtime can be determined as follows. To produce a sample,
+we need to make 2s calls to the multiplicative error estimation algorithm of the previous
+section, each with error toleranceO(ϵ/s). Thus the runtime for sampling a bitstringx∈ Fs
+2
+from a distribution that approximates P up to error ϵ in total variation distance is
+O(kn3s3ϵ−2 log(δ−1)).
+Suppose now that, instead of eq. (2.46), we only have an approximate stabilizer decom-
+position of U|0n⟩. That is, we have a sum of stabilizer states
+|ψ⟩ =
+k∑
+i=1
+ci|φi⟩ (2.50)
+such that
+‖|ψ⟩− U|0n⟩‖≤ ϵ. (2.51)
+Deﬁne a probability distribution Q overs-bit strings by
+Q(x) :=⟨ψ|Πx|ψ⟩
+‖ψ‖2 . (2.52)
+22
+Since|ψ⟩ is ϵ-close to a normalized state, we have 1 −ϵ≤‖ ψ‖≤ 1 +ϵ, which implies
+(1 +ϵ)−2≤‖ψ‖−2≤ (1−ϵ)−2. Using (1±ϵ)−2 = 1∓O(ϵ) we get
+‖‖ψ‖−2|ψ⟩− U|0n⟩‖≤ cϵ, (2.53)
+for a small constant c > 0 that is not hard to determine from the Taylor expansion of
+(1±ϵ)−2 (for example for ϵ≤ 1/2 we may take c = 6). This implies
+‖P−Q‖1≤cϵ. (2.54)
+By appropriately re-scaling ϵ, we can ensure that approximate sampling from Q produces
+a sample from a distribution which approximates P to within any desired error in total
+variation distance. We can approximately sample Q by using the same method as in the
+exact case, replacing U|0n⟩ by the state
+|ψ⟩/‖ψ‖2 =
+k∑
+i=1
+(ci/‖ψ‖2)|φi⟩.
+Namely, every marginal distribution ofQ, obtained by measuring a subset of r qubits, can
+be written as
+Q(x1,...,x r) =⟨ψ|Π|ψ⟩
+‖ψ‖
+for some stabilizer projector Π, and both the numerator and denominator can be estimated
+up to multiplicative error using Lemma 6.
+2.2.2 Finding exact and approximate low-rank stabilizer decom-
+positions
+Next we discuss how to obtain stabilizer decompositions of the output state of the circuit;
+i.e. a decomposition of the form
+U|0n⟩ =
+k∑
+i=1
+ci|φi⟩, (2.55)
+where φi are stabilizer states. Here we seek decompositions which are sparse, that is, the
+number of stabilizer terms in the decomposition needs to be k≪ 2m. Note that we can
+typically write a non-Cliﬀord gate as a linear combination of two Cliﬀord gates, which
+23
+gives a stabilizer decomposition of the form in eq. (2.55) with k = 2m terms. We seek to
+ﬁnd more compressed decompositions than this baseline.
+Two methods are known for producing such decompositions. The ﬁrst method relies on
+constructing an equivalent circuit toU in which every non-Cliﬀord gate is replaced by a Clif-
+ford gate and an ancilla qubit initialized in a magic state. This is the same state-injection
+gadget from fault-tolerant quantum computing, where non-Cliﬀord gates are applied by
+consuming ancilla qubits prepared using some magic state distillation routine [30]. The
+upshot is that this method allows us to convert compressed stabilizer decompositions of
+copies of a magic state into stabilizer decompositions of the output state of the circuit.
+The second method, known as the sum-over-Cliﬀords method, is more direct, but
+produces only approximate stabilizer decompositions. It relies on decomposing each non-
+Cliﬀord gate in the circuit as a linear combination of Cliﬀords and then using randomized
+sparsiﬁcation to ﬁnd a sparse approximation. Below we give a more detailed description
+of the two methods.
+Decompositions using state injection gadgets
+In this construction, a non-Cliﬀord gate A can be applied by consuming an ancilla qubit
+initialized in the state A|+⟩. A CNOT gate is applied between the qubit we want to
+apply A to and the ancilla qubit, followed by measuring the ancilla qubit, see Figure 2.1.
+Conditioned on obtaining the outcome 0, the correct gate is applied to the data qubit. If
+outcome 1 is obtained, a correction is needed. The correction gate is guaranteed to be a
+Cliﬀord gate provided that A belongs to the third level of the Cliﬀord hierarchy, otherwise
+it is some arbitrary non-Cliﬀord gate (in which case the gadget is not very useful for
+purposes of fault-tolerant quantum computing, but still useful for classical simulations).
+The ancilla measurement returns either 0 or 1 with equal probability. Suppose that we
+post-select on the ancilla measurement returning the outcome 0. In this case no correction
+is required. By replacing every non-Cliﬀord gate in the circuit U by its corresponding
+state-injection gadget and post-selecting, we obtain an equivalent Cliﬀord circuitV , acting
+on the original n qubits and m additional ancilla qubits, that is equivalent to U under
+post-selection.
+Suppose for example that each of the m non-Cliﬀord gates in the circuit is a T gate,
+where T = diag(1,eiπ/4), and let |T⟩ := T|+⟩. Using state-injection we obtain a Cliﬀord
+circuit V on n +m qubits which satisﬁes
+U|0⟩⊗n = 2m/2(
+I1,...,n⊗⟨ 0⊗m|
+)
+V (|0⟩⊗n|T⟩⊗m). (2.56)
+24
+|ψ⟩ • B A|ψ⟩
+A|+⟩
+Figure 2.1: The state-injection gadget. A non-Cliﬀord gate A can be applied by consuming
+an ancilla qubit initialized in the state A|+⟩. If the measurement outcome is 0, the gate A
+is successfully applied to the data qubit. Otherwise a correction gateB needs to be applied.
+If A is in the third level of the Cliﬀord hierarchy (such as the T gate), the correction gate
+B is a Cliﬀord gate.
+The factor 2m/2 corrects the norm of the state to account for the post-selection probability.
+For every (n +m)-qubit stabilizer state |φ⟩, the state ⟨0⊗m|φ⟩ is an n qubit stabi-
+lizer state which can be computed eﬃciently. The idea now is to start with a stabilizer
+decomposition of|T⟩⊗m and use it to compute a stabilizer decomposition of
+(
+I1,...,n⊗⟨ 0⊗m|
+)
+V (|0⟩⊗n|T⟩⊗m).
+This gives a stabilizer decomposition of U|0n⟩ using the same number of terms as the
+decomposition of|T⟩⊗m .
+Finding a low-rank decomposition ofU|0n⟩ is now reduced to the problem of ﬁnding low-
+rank decompositions of|T⟩⊗m. This problem is still hard, but we can use decompositions
+of a small number of copies by breaking the m tensor factors into blocks. For example,
+it is known that we can decompose 6 copies of |T⟩ using 7 stabilizer states. This gives a
+decomposition of m copies in terms of 7m/6≈ 20.468m stabilizer states. In Chapter 4 in this
+thesis, we describe how that can be improved to reduced 2 0.3962m.
+The method outlined above requires an exact stabilizer decomposition of |T⟩⊗m. This
+is easy to see from eq. (2.56); an additive error ϵ on|T⟩⊗m will be exponentially ampliﬁed
+by the factor 2m/2.
+Decompositions by sparsifying a sum-over-Cliﬀords
+The randomized sparsiﬁcation idea of Lemma 4 can be used to produce approximate sta-
+bilizer decompositions of the state U|0⟩⊗n in a way that bypasses the need for introducing
+state-injection gadgets.
+25
+Suppose the circuit is given in the form
+U =CmUmCm−1Um−1...C 1U1C0, (2.57)
+where Ci are Cliﬀord blocks and each Ui is a non-Cliﬀord gate. By expanding each Ui as
+a sum of Cliﬀords,
+Uj =
+∑
+k
+bjkVjk, (2.58)
+we can write the entire circuit U as
+U =
+∑
+i
+aiWi, (2.59)
+where each Wi is a Cliﬀord circuit, and ‖a‖1 =∏
+j‖bj‖1. Since each Uj requires at least
+2 Cliﬀord gates to decompose, the number of terms in the above Cliﬀord expansion of U
+is at lease 2 m. Thus k = 2m is the baseline for the number of stabilizer terms. We will
+improve on it by making use of randomized sparsiﬁcation.
+To implement randomized sparsiﬁcation, we pick a random subset of N of the terms in
+eq. (2.59), where each element is independently randomly selected from the set {Wi} with
+a frequency determined by |ai|/‖a‖1. This can be done by selecting Vjk with probability
+|bjk|/‖bj‖1 and replacing each Uj with Vjk. This produces a random Cliﬀord circuit C
+according to some distribution.
+LetC1,..., CN be independent instances produced in this way. By a complex-valued
+version of Hoeﬀding’s inequality, we have
+‖U|0⟩⊗n−‖a‖1
+N
+N∑
+i=1
+Ci|0⟩⊗n‖<ϵ (2.60)
+with probability at least 1−δ provided that
+N =c‖a‖2
+1ϵ−2 logδ−1. (2.61)
+where c is a small constant. For such N the state
+‖a‖1
+N
+N∑
+i=1
+Ci|0⟩⊗n (2.62)
+26
+approximates the output state of the circuit. Since each Ci is a Cliﬀord circuit, each term
+in eq. (2.62) is a stabilizer state. Hence we found an approximation of U|0n⟩ that is a sum
+of roughly‖a‖2
+1ϵ−2 logδ−1 stabilizer states.
+In order to reduce the number of terms N, we should pick decompositions in eq. (2.58)
+with small 1-norm, i.e. small ‖bj‖1≡ ∑
+k|bjk|. If each Uj is a single-qubit rotation of
+the form exp(iθjZ) for 0 ≤ θj≤ π/2, then the optimal Cliﬀord decomposition achieves
+‖bj‖1 = cosθj + tan(π/8) sin(θj), and in this case
+‖a‖1 =
+m∏
+j=1
+‖bj‖1 =
+m∏
+j=1
+(cos(θj) + tan(π/8) sin(θj)). (2.63)
+For example, if each Uj is a T gate, i.e. θj = π/4 for all j, then the number of stabilizer
+terms in the approximate state in eq. (2.62) is k ≈ 20.228mϵ−2 logδ−1. The time cost
+of simulating the circuit using these approximate decompositions is determined by this
+scaling.
+More generally, the optimal product decomposition of this type has 1-norm
+‖a‖2
+1 =
+m∏
+j=1
+ξ(Uj). (2.64)
+where ξ is the stabilizer extent. In section 3.3, we describe how we can go beyond such
+product decompositions by re-writing the circuit in such a way that allows us to use Cliﬀord
+decompositions of matrix products of gates.
+27
+Chapter 3
+Improved simulation by Cliﬀord
+recompilation
+3.1 Introduction
+When a quantum circuit U contains m non-Cliﬀord single qubit gates, the output state
+U|0⟩⊗n can be written as sum of k = 2 m stabilizer states. Randomized sparsiﬁcation
+allows us to reduce k signiﬁcantly at the expense of introducing an approximation error.
+Each term of this approximate stabilizer decomposition is computed by replacing each
+non-Cliﬀord gate in the circuit with a Cliﬀord gate chosen randomly according to its
+relative weight in the Cliﬀord decomposition of the non-Cliﬀord gate, and then classically
+simulating the circuit using the phase-sensitive Cliﬀord simulations of section 2.1.4.
+The time cost of producing the approximate state in eq. (2.62) is roughly the number
+of required stabilizer states k to approximate U|0n⟩ with high probability multiplied by
+the cost of computing each stabilizer term. Denoting by 𝓁 the total number of gates in the
+circuit, the update rules in section 2.1.4 show that we can compute the CH-form of each
+stabilizer term in time O(𝓁n2), and therefore the total time cost for producing a sparse
+approximation of U|0⟩⊗n is O(k𝓁n2).
+In Section 3.2, we provide an alternative method of computing the terms which re-
+quires only O(mn2) basic operations and a modest increase in memory. As k is typically
+exponentially large, such an improvement can result in a useful speed up whenever 𝓁≫m.
+This is done by absorbing the action of the Cliﬀord part of the circuit into the input state
+|0n⟩, while simultaneously keeping track of an eﬃcient description of certain many-qubit
+gates that is well-suited for phase-sensitive Cliﬀord simulation.
+28
+In Section 3.3, we show that the improved method allows for reducing the exponential
+scaling of the runtime by utilizing low rank approximate decompositions ofmatrix products
+of non-Cliﬀord gates.
+In section 3.4 we suggest a straight-forward method of estimating amplitudes with
+inverse polynomial additive error using this canonical form of the circuit. Such estimates
+are useful when the probability we want to estimate is not exponentially small, as well
+as in approximate-sampling from the circuit distribution using the heuristic Metropolis
+algorithm in [8].
+3.2 Cliﬀord recompilation
+We now describe an improved method for generating low stabilizer rank approximations
+of the output state U|0⟩⊗n of a quantum circuit U based on a re-writing procedure, which
+we call Cliﬀord recompilation. Here the goal is to simulate a quantum circuit U given as
+U =CmUmCm−1Um−1...C 1U1C0, (3.1)
+whereCi are multi-qubit Cliﬀord sub-circuits, andUi are non-Cliﬀord gates. The ﬁrst step
+is to commute all non-Cliﬀord gates to the end of the circuit
+U =U′
+m...U ′
+1CmCm−1...C 1C0, (3.2)
+where U′
+i =Cm:iUiC†
+m:i, with the concise notation Cj:k :=CjCj−1...C k. Of course the U′
+i
+no longer act on a ﬁxed number of qubits, and one might expect them to be too complicated
+to store and manipulate. However, as we will explain below, we can eﬃciently keep track
+of a compact description of the U′
+i that is well-suited for randomized sparsiﬁcation.
+We can absorb the action of the Cliﬀord gates into the input state, so that the output
+state is given by
+U|0n⟩ =U′
+m...U ′
+1|φ⟩ (3.3)
+where|φ⟩≡ Cm:0|0n⟩ is a stabilizer state. Note that the CH-form of |φ⟩ can be computed
+in time O(cn2), where c≡ 𝓁−m is the number of Cliﬀord gates in U. In any case, it is
+a one-time computation that does not need to be iterated over in the simulation. Storing
+the CH-form of|φ⟩ in memory requires O(n2) bits.
+29
+Algorithm 1: Monte Carlo algorithm for improved randomized sparsiﬁcation
+Input : The CH-form (ω0,U 0
+C,U 0
+H) of the stabilizer state |φ⟩ in eq. (3.3). A
+decomposition of the form in eq. (3.7) for i = 1,...,m .
+Output: A random vector|z⟩ such that E(|z⟩) =U|0⟩⊗n.
+1 begin
+2 Set (ω,UC,UH)← (ω0,U 0
+C,U 0
+H)
+3 for i =1, . . . , m do
+4 Choose V′
+ij with probability pi(j)≡|aij|/‖ai‖1;
+5 Update (ω,UC,UH) under V′
+ij;
+6 Set ω← (aij/|aij|)ω;
+7 Output|z⟩ =‖a‖1wUCUH|s⟩.
+8 end
+Next we discuss how to compute and store the U′
+i. Suppose we are given a Cliﬀord
+decomposition of each non-Cliﬀord gate in U;
+Ui =
+∑
+j
+aijVij. (3.4)
+We will use exponentiated Pauli matrices to compute and store U′
+i eﬃciently. First note
+that each Vij can be written as a product of Cliﬀord gates of the form exp( iθP ) where P
+is a Pauli and θ∈ (π/4)Z 1. We can therefore write
+Ui =
+∑
+j
+aij
+O(1)∏
+k=1
+exp(iθijkPijk), (3.6)
+where aij absorbs any phases from the elementary gates, and {Pijk} is some collection of
+1For example, the Hadamard, PHASE, and CZ gates can be written as
+Hj =eiπ/2e−iπ
+2Zjeiπ
+4Yj,
+Sj =eiπ/4e−iπ
+4Zj,
+CZjk =eiπ/4eiπ
+4ZjZke−iπ
+4Zje−iπ
+4Zk. (3.5)
+Similar identities can be derived for any Cliﬀord gate.
+30
+Pauli matrices. Then
+U′
+i =
+∑
+j
+aijCm:i
+[∏
+k
+exp(iθijkPijk)
+]
+C†
+m:i
+=
+∑
+j
+aij
+∏
+k
+exp(iθijkCm:iPijkC†
+m:i)
+=
+∑
+j
+aij
+∏
+k
+exp(iθ′
+ijkP′
+ijk)
+=
+∑
+j
+aijV′
+ij. (3.7)
+where
+V′
+ij≡
+∏
+k
+exp(iθ′
+ijkP′
+ijk), (3.8)
+θ′
+ijk∈{±θijk}, and theP′
+ijk are Pauli matrices each of which can be computed eﬃciently in
+time O(c). Storing this description of U′ requires O(nm) bits of memory, since each Pauli
+matrix requires O(n) bits to specify.
+Algorithm 1 describes the improved randomized sparsiﬁcation Monte Carlo. By Hoeﬀd-
+ing’s inequality, the required number of iterations of the Monte Carlo in order to bound the
+error byϵ with probability at least 1−δ isO(‖b‖2
+1ϵ−2 log(1/δ)). This is the same number of
+iterations required of the vanilla randomized sparsiﬁcation method in [8] (see eq. (2.61)),
+but the point is that each iteration in the improved algorithm requires only O(mn2) basic
+operation.
+In short, our improved randomized sparsiﬁcation removes the dependence of the runtime
+on how many Cliﬀord gates there are. This is achieved by recompiling the circuit and
+absorbing the action of all Cliﬀord gates in the circuit into the input state, which only
+needs to be computed once.
+3.3 Cliﬀord decomposition of products of multi-qubit
+gates
+As we mentioned earlier in this chapter, ﬁnding a Cliﬀord decomposition of a non-Cliﬀord
+gateUi with minimal 1-norm (i.e. minimum‖ai‖1 in eq. (3.4)) can be done using a convex
+31
+optimization software [11, 8]. These brute-force optimizations can only be performed for
+one- or two-qubit gates, as it is too computationally intensive for more qubits. In this
+section we describe how recompiling the circuit as in the previous section allows us to
+search for more sparse approximate stabilizer decompositions of the output state.
+The stabilizer extent for unitaries is sub-multiplicative under composition, i.e.
+ξ(AB)≤ξ(A)ξ(B). (3.9)
+For two operators A and B, let us call a Cliﬀord decomposition of the product AB con-
+tractive if its 1-norm is strictly less than ξ(A)ξ(B). Finding a contractive Cliﬀord decom-
+position of AB is generally hard unless A and B are at most 2-qubit gates acting on the
+same pair of qubits, so that we can use convex optimization.
+An exception is when the two operators can be mapped to the same pair of qubits via a
+CliﬀordC. In that case, one can ﬁnd a contractive decomposition of CABC† using convex-
+optimization, and then apply the inverseC†, using the idea of eq. (3.7) to keep the terms in
+a form enabling fast phase-sensitive Cliﬀord updates. This method is well-suited to the case
+of Cliﬀord+eiθP circuits, which we discuss next. Furthermore, if better numerical methods
+can be found for minimizing the 1-norm, so that one can ﬁnd the optimal decomposition
+for 3 qubit gates, this Cliﬀord-equivalence method can be used with a much greater eﬀect.
+Example: Cliﬀord+ eiθP circuits. As an example of how these ideas can be used in
+practice, we consider circuits where each non-Cliﬀord gate has the form eiθP , where P is
+a Pauli operator, and θ∈ [−π,π ]. This class of circuits includes important cases such as
+Cliﬀord+T circuits, and more generally Cliﬀord+ Z rotation circuits. For a circuit U of
+this type containing m non-Cliﬀord gates, eq. (3.3) reduces to
+U|0n⟩ =eiθmQm...e iθ1Q1|φ⟩, (3.10)
+for a list of Hermitian n-qubit Pauli operators Q1,...,Q m, a list of angles θ1,...,θ m, and
+a stabilizer state|φ⟩.
+Note that the unitary eiθP is Cliﬀord if and only if θ∈ (π/4)Z. Thus we may, without
+loss of generality, assume that θi∈ (0, π
+4 ), as otherwise we can “factor out” Cliﬀord gates
+e±iπ
+4Qi and absorb them into the state |φ⟩, at the cost of applying a Cliﬀord mapping to
+the list of Pauli operators Qj with j <i. The Cliﬀord mapping can be quickly computed
+using the relation
+eiπ
+4PQe−iπ
+4P =
+{
+Q if [P,Q ] = 0
+iPQ if{P,Q} = 0. (3.11)
+32
+We refer to eq. (3.10) as the canonical form of the output state of a Cliﬀord+ eiθP circuit.
+What is the optimal Cliﬀord decomposition of the product
+eiθmQm...e iθ1Q1,
+and how can we ﬁnd it? Here optimal is in the sense of having a vector of coeﬃcients
+with minimum 1-norm. Not only is this question too hard to settle using currently known
+methods, it is unlikely that there will ever be tractable numerical or analytical tools that
+can answer it in general.
+We therefore restrict our attention to the task of reducing the 1-norm below that which
+is achieved by optimally decomposing each exponential separately. Recall that, for a single
+qubit Pauli operator P , we can numerically ﬁnd the optimal decomposition of eiθP into
+Cliﬀord gates, and it is given by
+eiθP = (cosθ− sinθ)I + (
+√
+2 sinθ)eiπ
+4P. (3.12)
+The above decomposition achieves the stabilizer extent
+ξ(eiθP ) =
+[
+cosθ + (
+√
+2− 1) sinθ
+]2
+(0≤θ≤ π
+4 ). (3.13)
+This numerically obtained fact for single qubit Pauli operators can be generalized ton-qubit
+Pauli operators, since we can map an n-qubit Pauli to a Pauli acting on a single qubit via
+Cliﬀord conjugation. This assertion follows from i) invariance of ξ under multiplication by
+Cliﬀord unitaries, ii) invariance of ξ under tensoring by the identity, i.e. ξ(U⊗I) =ξ(U).
+Let’s now consider a product of a small number of exponentials. If a sub-sequence
+of the exponentials in eq. (3.10) multiplies to a Cliﬀord gate, it can be commuted past
+the gates prior to it and absorbed into the input stabilizer state |φ⟩, eﬀectively reducing
+the number of non-Cliﬀord gates in the circuit. As we are dealing with a universal set of
+gates, it is generally intractable to determine whether any such sub-sequence belongs to
+the Cliﬀord group.
+For a sub-sequence of length two; eiθPeiφQ, with θ,φ∈ (0,π/ 4), PQ⁄=±I, there exists
+no better decomposition of eiθPeiφQ than the product one, obtained by decomposing each
+gate separately and multiplying. In other words,
+Lemma 7. For any two n-qubit Paulis P and Q, PQ⁄=±I, and θ,φ∈ (0,π/ 4), we have
+ξ
+(
+eiθ1Peiθ2Q)
+=ξ
+(
+eiθ1P)
+ξ
+(
+eiθ2Q)
+. (3.14)
+33
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ● ●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■ ■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲ ▲ ▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲ ▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+●
+ⅇⅈ θ� � ��� ⅇⅈ θ� ⅇⅈ θ�
+■
+ⅇⅈ θ� ⅇⅈ θ� ⅇⅈ θ�
+◆
+ⅇⅈ θ� ⅇⅈ θ� ⅇⅈ θ� ⅇⅈ θ�
+▲
+ⅇⅈ θ� ⅇⅈ θ� ⅇⅈ θ� ⅇⅈ θ� ⅇⅈ θ�
+π
+8
+π
+4
+θ
+2 Logf(θ) 1/L 
+0.228
+0
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+● ● ●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●
+●■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■ ■ ■ ■
+■
+■ ■ ■ ■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■
+■◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆ ◆ ◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆ ◆ ◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆
+◆▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲ ▲ ▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲ ▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲ ▲ ▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲
+▲▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼ ▼ ▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼ ▼
+▼
+▼
+▼
+▼ ▼ ▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+▼
+●
+ⅇⅈ θ(��) � ⅇⅈ θ(��) ⅇⅈ θ(��) � ��� ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��)
+■
+ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��)
+◆
+ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��)
+▲
+ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��)
+▼
+ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��) ⅇⅈ θ(��)
+π
+8
+π
+4
+θ
+2 Logf(θ) 1/L 
+0.228
+0
+Figure 3.1: Theoretical time cost of simulating various one- and two-qubit exponential
+sequences. The angles are chosen to be equal for simplicity. For a sequence of length L,
+the functionf(θ) is the 1-norm of the decomposition of the sequence into Cliﬀord gates, and
+f(θ)1/L is the eﬀective 1-norm per gate. The function 2 log( f(θ)1/L) is the contribution of
+each gate to α, where 2α is the exponential scaling factor in the runtime of the simulation.
+The data is obtained using a convex optimization software (CVX with the SDPT3 solver).
+Proof. This can be veriﬁed numerically for two-qubit Paulis, and the general case follows
+from the fact that any pair of n-qubit PaulisP andQ can be mapped by a Cliﬀord circuit
+to a pair of Paulis with support on the ﬁrst two qubits only.
+For products of three or more exponentials, we can ﬁnd decompositions with signif-
+icantly reduced 1-norm in certain cases. Numerically, we observe that the possibility of
+1-norm reduction is correlated with the rank of the binary representation of the Paulis.
+Speciﬁcally, for x,z ∈ Zn
+2 write X[x]≡ Xx1⊗···⊗ Xxn, Z[z]≡ Zz1⊗···⊗ Zzn, and
+34
+P(x,z)≡ix·zX[x]Z[z]. Then numerics in the two qubit case suggest that,
+ξ
+(∏
+j
+eiθjPvj
+)
+<
+∏
+j
+ξ(eiθjPvj ) (3.15)
+whenever rank(v1,v 2,··· ,vk)<k with rank(·) computed mod 2.
+For example, it is possible to numerically verify that
+ξ
+(
+eiθ1Xeiθ2Yeiθ3Z)
+<ξ
+(
+eiθ1X)
+ξ
+(
+eiθ2Y)
+ξ
+(
+eiθ3Z)
+, (3.16)
+for any choice of angles ( θ1,θ 2,θ 3). We can also numerically ﬁnd the optimal Cliﬀord
+expansion
+eiθ1Xeiθ2Yeiθ3Z =
+∑
+i
+αiCi, (3.17)
+for some collection of single qubit Cliﬀords Ci. For example, for any 0 ≤ θ≤ π/8, the
+optimal expansion is given by
+eiθXeiθYeiθZ =c0(θ)I +c1(θ)SH +c2(θ)HX +c3(θ)SHS (3.18)
+where
+c0(θ) = cos 3θ− sinθ
+c1(θ) =eiπ/4[sin 2θ(cosθ− sinθ)]
+c2(θ) =c3(θ) = (
+√
+2 sin 2θ sinθ). (3.19)
+More generally, the Cliﬀord terms in the optimal expansion eq. (3.17) vary depending on
+(θ1,θ 2,θ 3), and a general expression for the optimal decomposition is too tedious to write
+down, although ﬁnding it numerically is easy on a case-by-case basis.
+Similarly to what we did in the case of two exponentials, we can now conclude that, for
+any triple of n-qubit Paulis (P,Q,W ) which are equivalent to (X1,Y 1,Z 1) via conjugation
+by a Cliﬀord V , the optimal decomposition is given by
+eiθ1Peiθ2Qeiθ3W =
+∑
+i
+αiV†(Ci⊗I⊗n−1)V. (3.20)
+As before, each Cliﬀord term V†(Ci⊗I⊗n−1)V is easy to write as a product of a small
+number of Cliﬀords of the formeiφR whereR is a Pauli andφ∈ (π/4)Z, using the same idea
+35
+in eq. (3.7). This way we obtain a decomposition of the many-body operatoreiθ1Peiθ2Qeiθ3W
+which is both optimal and in a form enabling fast phase-sensitive Cliﬀord updates.
+The reduction in the 1-norm by decomposing products of gates can be quite large, see
+for example Figure 3.1, where the log of the 1-norm is plotted for diﬀerent one and two
+qubit gate sequences of varying lengths. This directly translates to classical simulation
+schemes with milder exponential scaling of the runtime.
+3.4 Additive-error approximation of amplitudes
+In section 2.2 we described how a marginal circuit probability 2 can be estimated using
+stabilizer decompositions of the output state. To bound the multiplicative error on the
+estimate by ϵ, the required runtime of this algorithm depends linearly on the number of
+terms in an exact stabilizer decomposition of the output state, and polynomially on the
+number of qubits and 1/ϵ.
+For estimating an amplitude, (i.e. a probability of a ﬁne-grained event, where we
+measure all of the qubits), the time cost of the above mentioned algorithm is O(kn5ϵ−2),
+wherek is the number of terms in the stabilizer decomposition. The n5 factor is signiﬁcant
+in practice, as was noted in [8].
+In this section we instead consider an approximation correct up to additive error ϵ
+whose runtime scales like O(kmn2), where m is the number of non-Cliﬀord gates in the
+circuit and k is the number of stabilizer terms in an approximate decomposition of the
+output state. Such estimates are useful when the probability we want to estimate is not
+exponentially small. Furthermore estimates obtained in this way can be used with the
+Markov Chain Monte Carlo variant of stabilizer rank methods, as shown in [8], which was
+shown to outperform other methods, despite having no rigorous error guarantees.
+We describe how such an algorithm may be extended to other gate sets, such as nearest-
+neighbor matchgate circuits, and highlight how sampling Cliﬀord-like unitary trajectories
+requires a signiﬁcantly smaller sample size to guarantee convergence up to a required
+precision than other, similar approaches.
+2i.e. the probability P (x) of obtaining outcome x when measuring a subset of the qubits after applying
+a quantum circuit.
+36
+3.4.1 A simpliﬁed algorithm for estimating amplitudes
+A simple Monte Carlo algorithm based on randomized sparsiﬁcation can be used to estimate
+the amplitudes⟨x|U|0n⟩ of the circuitU. Indeed the output of Algorithm 1 is an unnormal-
+ized random vector |η⟩, proportional to a stabilizer state, whose mean is E(|η⟩) = U|0n⟩.
+Thus for any x∈ Fn
+2
+E(⟨x|η⟩) =⟨x|U|0n⟩. (3.21)
+Given an instant|η⟩, we can eﬃciently compute ⟨x|η⟩ using the methods in section 2.1.4.
+This is because|η⟩ is proportional to a stabilizer state. Since⟨x|η⟩ is an unbiased estimator
+of⟨x|U|0n⟩, we can use an empirical mean to estimate it, invoking a complex-valued version
+of Hoeﬀding’s inequality [33, 9] to bound the probability of the additive error exceeding ϵ.
+An empirical mean R obtained by averaging k instances satisﬁes
+Pr [|R−⟨x|U|0n⟩|≥ ϵ]≤δ, (3.22)
+provided we take k≈‖ a‖2
+1ϵ−2 log(δ−1). Thus by averaging enough evaluations of ⟨x|z⟩,
+one obtains a good estimate of ⟨x|U|0n⟩ with high probability.
+Given the CH-form of an instance of|η⟩, it takes time O(n2) to compute the amplitude
+⟨x|η⟩ using the methods in section 2.1.4. This gives a runtime scaling ofO(‖a‖2
+1mn2ϵ−2 log(δ−1))
+for computing an additive error estimate of the amplitude, using the improved sparsiﬁca-
+tion Monte Carlo Algorithm 1.
+Typically we are interested in estimating the probability Pr( x) = |⟨x|U|0n⟩|2, rather
+than the amplitude. It is straightforward to check that if |R−⟨x|U|0n⟩| ≤cϵ, where
+c =
+√
+2− 1, then ||R|2−P (x)|≤ ϵ (assuming ϵ < 1). In other words, estimating the
+probability instead of the amplitude only requires multiplying k by the constant c−2≈ 6.
+3.4.2 A digression on sampling computational paths
+The algorithm just described for estimating ⟨x|U|0n⟩ relies on sampling a large number of
+Cliﬀord-like computational paths and averaging their contributions to the amplitude. This
+is achieved by writing the circuit U as sum of Cliﬀord circuits,
+U =
+∑
+i
+aiWi =‖a‖1
+∑
+i
+|ai|
+‖a‖1
+Wi, (3.23)
+37
+and then averaging many contributions ‖a‖1⟨x|Wi|0n⟩, each chosen independently with
+probability p(i) = |ai|
+‖a‖1
+(here we assume that the ai are positive by absorbing phases
+into the Wi). Each Cliﬀord circuit Wi is associated with a computational trajectory.
+These trajectories branch at every non-Cliﬀord gate in the circuit. The distribution p over
+trajectories can be sampled by implementing a suitable probabilistic update rule at every
+non-Cliﬀord time step. This is an intuitive description of what algorithm 1 does.
+Estimating the amplitude in this way clearly suﬀers from the problem of large can-
+cellations. This is because ‖a‖1≫ 1, and the contributions from diﬀerent computational
+trajectories, namely ‖a‖1⟨x|Wi|0n⟩, can have diﬀerent phases. Catastrophic destructive
+interference can make the estimate of the amplitude unstable.
+Despite this, we can still obtain rigorous error guarantees by averaging a large number of
+trajectories, roughly‖a‖2
+1/ϵ2. It is possible to obtain error guarantees with less trajectories
+if we had more information about the circuit, in particular the variance of the associated
+random variable. In general we do not have access to the variance and so we choose the
+most pessimistic tail-bound, i.e. the one speciﬁed by Hoeﬀding’s inequality.
+The main advantage of using Cliﬀord decompositions of the circuit is that the required
+number of trajectories to obtain error guarantees has a mild exponential scaling with the
+number of non-Cliﬀord gates. For instance, a circuit consisting of Cliﬀord gates and m
+T gates requires averaging roughly ‖a‖2
+1/ϵ2≈ 20.228m/ϵ2 trajectories, a dramatic improve-
+ment over the total number of trajectories 2 m. This exponential scaling is in fact much
+milder than similar Monte Carlo methods for simulating Cliﬀord+T circuits that have been
+recently reported. These alternative methods are based on Monte Carlo using entries of
+the gates in the computational basis [9], quasi-probability distributions [10], robustness of
+magic [11], and channel decompositions [12].
+What is it about unitary Cliﬀord trajectories that gives rise to this phenomenon? The
+obvious explanation is not very satisfactory; it is simply the geometric fact that there exists
+a decomposition
+T =c1C1 +c2C2, (3.24)
+where Ci are Cliﬀord gates, such that ‖c‖2m
+1 = 2 0.228m, where ‖c‖1 =|c1| +|c2| is the
+1-norm. Can we instead decompose the circuit as a linear combination over some other
+set of circuits and obtain a similarly mild exponential scaling? In the next subsection we
+explore such possibilities.
+38
+3.4.3 Generalizations to other gate sets
+Suppose we want to estimate the amplitude⟨x|U|0n⟩ by decomposingU as a linear combi-
+nation of some set of unitariesWi. A necessary requirement is that we are able to eﬃciently
+compute the contribution from each term ⟨x|Wi|0n⟩ on a classical computer.
+As an example, given a circuit U in the gate set{HADAMARD, CNOT, NOT, T}, we
+may write U as a sum of circuits that preserve the computational basis. This can be done
+by decomposing each Hadamard gate in the circuit as a sum of Paulis;
+H = 1√
+2(X +Z). (3.25)
+Denoting by h the total number of Hadamard gates in the circuit, the resulting expansion
+U =
+∑
+i
+aiWi
+has‖a‖1 = (2/
+√
+2)h = 2h/2. Therefore the required number of computational trajectories
+for constant additive errorϵ is roughly‖a‖2
+1 = 2h. This oﬀers no advantage in terms of the
+exponential scaling of the runtime over simply computing the sum of all 2 h branches.
+Perhaps the most natural candidate for generalizing stabilizer rank methods is fermionic
+Gaussian states and nearest-neighbor matchgates. Nearest-neighbor matchgates have been
+known to be classically simulable since a seminal work of Valiant [2], who gave eﬃcient
+algorithms for computing circuit probabilities and sampling the circuit distribution. An ex-
+tension of these method and an interpretation of them in terms of non-interacting fermions
+was later identiﬁed by Terhal & Divincenzo [3]. Furthermore, a variant of the norm esti-
+mation algorithm, Lemma 6, speciﬁc to fermionic Gaussian states was derived by Bravyi
+& Gosset in the context of simulating quantum impurity models [34].
+Importantly for our purpose, nearest-neighbor matchgate circuit amplitudes can be
+computed (i.e. with the phase) in classical polynomial time, see for instance the appendix
+in [35] for a quick recipe. Augmenting nearest-neighbor matchgates with nearest-neighbor
+SWAP gates is suﬃcient for universal quantum computation. This motivates searching for
+matchgate decompositions of the SWAP gate.
+We can use a straightforward numerical optimization to minimize the 1-norm over
+matchgate decompositions of the SWAP gate. Namely, every two-qubit matchgate has the
+39
+form
+G(U,V ) =
+
+
+u11 0 0 u12
+0 v11 v12 0
+0 v21 v22 0
+u21 0 0 u22
+
+ (3.26)
+whereU,V ∈U(2) satisfy det(U) = det(V ). Discarding a global phase we may takeU,V ∈
+SU (2). Note that the SWAP gate cannot be written in this form since det( X) =− det(I).
+Our numerical search suggests that the decomposition
+SWAP =eiπ/4
+√
+2 G(I,−iX) +e−iπ/4
+√
+2 G(I,iX ) (3.27)
+has minimal 1-norm over all matchgate-decompositions of SWAP, where G(I,±iX) is the
+±iSWAP gate
+G(I,±iX) =
+
+
+1 0 0 0
+0 0 ±i 0
+0 ±i 0 0
+0 0 0 1
+
+. (3.28)
+This decomposition has 1-norm equal to
+√
+2, which implies that amplitude estimation using
+this decomposition has a runtime scaling like 2 m, where m is the number of SWAP gates.
+Since it is possible to exactly compute the amplitude in time 2 mpoly(n) by computing the
+2m matchgate contributions, this decomposition is not useful for this purpose.
+Our numerics are not exhaustive, and furthermore do not exclude the possibility of
+reducing the 1-norm by decomposing parallel SWAP gates into nearest-neighbor matchgate
+circuits involving more than two qubits.
+Another possible generalization involves product vs. entangling gates. Considering the
+universal gate set {HADAMARD, PHASE, T, CPHASE}, we seek to ﬁnd decompositions
+of the CPHASE gate into a sum of tensor product unitaries. We ﬁnd numerical evidence
+that the decomposition
+CPHASE = eiπ4
+√
+2 (S†
+1S†
+2−iS1S2) (3.29)
+40
+achieves the minimum 1-norm over all decompositions of CPHASE as a sum of tensor
+product gates (not necessarily Cliﬀords), where Si is the PHASE gate on qubit i. Similar
+to the matchgate case, the 1-norm of this decomposition is
+√
+2, too large to provide an im-
+provement over brute force methods. Nevertheless, our numerical search is not exhaustive
+and a better decomposition may exist. It may also be the case that a decomposition of the
+form
+CPHASE⊗k =
+∑
+j
+ajVj, (3.30)
+exists such that each Vj is a product gate on 2 k qubits and‖a‖1 < 2k/2. Our numerical
+search did not detect such decompositions for k = 2 allowing for up to 4 terms in the sum.
+The reason it is not easy to perform conclusive numerical search, both for matchgate
+and product decompositions, is that the number of terms in the optimal decomposition
+may be large, and each term requires 6 extra search parameters (three for each gate in
+SU (2)). The decompositions given in eqs. (3.27) and (3.29) are optimal allowing up to 8
+terms in the sum.
+It is possible that much better decompositions can be achieved in the continuum limit,
+for example, via a complex-valued function f such that
+CPHASE =
+∫
+dUdVf (U,V )U⊗V, ‖f‖1 =
+∫
+dUdV|f(U,V )|<
+√
+2,
+where integration is with respect to the Haar measure over SU(2). This would reduce the
+runtime of the amplitude estimation algorithm to ‖f‖2m
+1 < 2m, where m is the num-
+ber of CPHASE gates, provided we can eﬃciently sample the distribution p(U,V ) =
+|f(U,V )|/‖f‖1. A similar question arises for decompositions of SWAP in terms of match-
+gates, i.e. whether there exists a function g such that
+SWAP =
+∫
+dUdVg (U,V )G(U,V ), ‖g‖1 =
+∫
+dUdV|g(U,V )|<
+√
+2.
+Determining whether such f and g exist (whose associated distributions can be sampled
+eﬃciently) is an interesting question, but outside the scope of this discussion.
+Finally, let us return to the example of decomposing Hadamard gates as a linear combi-
+nation of computational-basis-preserving gates. It is easy to check that the decomposition
+H = 1√
+2(X +Z), (3.31)
+41
+is in fact optimal over all such single-qubit gates. It is easy to prove a somewhat stronger
+statement that lower-bounds the 1-norm in any decomposition of parallel Hadamard gates
+H⊗k over the setBk of computational-basis-preserving k-qubit unitaries. Equivalently Bk
+is the group of permutation matrices with a phase-mask: every element in Bk is obtained
+by taking a 2k by 2k permutation matrix and replacing its non-zero entries with phases.
+In what follows we treat Bk as if it were a discrete group (it is in fact a continuous
+group). This does not lose any generality (just replace the sum with integral with respect
+to Haar measure over the group Bk).
+Proposition 8. Suppose
+H⊗k =
+∑
+W∈Bk
+aWW. (3.32)
+Then‖a‖1≥ 2k/2.
+Proof. Every entry inH⊗k is non-zero with modulus 2−k/2. LetBk(i,j )⊂B k be the subset
+in which the (i,j )th entry is nonzero. We must have, for every ( i,j ),
+2−k/2 =|
+∑
+W∈Bk(i,j)
+aW|≤
+∑
+W∈Bk(i,j)
+|aW|.
+As every element ofBk contains exactly one non-zero entry in every row, we haveBk(i,j )∩
+Bk(i,j′) =∅ for j⁄=j′, which implies
+2k/2 =
+∑
+j
+|
+∑
+W∈Bk(i,j)
+aW|≤
+∑
+j
+∑
+W∈Bk(i,j)
+|aW|≤‖ a‖1.
+Proposition 8 shows that no such decomposition can speed up the amplitude estimation
+Monte Carlo beyond the baseline scaling of 2 h, where h is the number of Hadamard gates
+in the circuit.
+To conclude, up to validity of the numerical evidence we gathered, natural general-
+izations of the amplitude estimation and randomized sparsiﬁcation to other gate sets do
+not oﬀer any advantage in terms of the scaling of the simulation runtime. Only Cliﬀord
+unitaries and stabilizer states seem to have that feature.
+42
+Chapter 4
+Upper bounds on the exact stabilizer
+rank
+4.1 Introduction
+Finding low-rank stabilizer decompositions of the output state of a quantum circuit can
+signiﬁcantly reduce the runtime of simulating the circuit on a classical computer. The
+sparsiﬁcation lemma oﬀers one way to construct low-rank approximate decompositions.
+One drawback of approximate stabilizer decompositions is that we do not know how to
+use them to estimate circuit probabilities with multiplicative error ϵ in time k·poly(1/ϵ),
+where k is the number of stabilizer terms and we are ignoring the dependence on other
+variables. In contrast, exact stabilizer decompositions can be used for this purpose.
+In this chapter we describe a method of constructing exact, low-rank stabilizer decom-
+positions of|ψ⟩⊗m, where|ψ⟩ is a single qubit state. Using the gadget-based methods of
+[7, 8] (see section 2.2), such decompositions allow us to estimate marginal probabilities
+of quantum circuits consisting of Cliﬀords gates and m instances of a certain non-Cliﬀord
+gate associated with|ψ⟩, with a resource cost scaling ask·poly(1/ϵ), wherek is the number
+of terms in the decomposition and ϵ is the multiplicative error.
+We focus on the case where|ψ⟩ is either a magic state or an equatorial state. Recall that
+magic states are the non-stabilizer eigenstates of single qubit Cliﬀord unitaries. The set of
+magic states decomposes into two Cliﬀord orbits, of either the T state |T⟩ = 2−1/2(|0⟩ +
+eiπ/4|1⟩) or the face state |F⟩ = cos(β)|0⟩ +eiπ/4 sin(β), where β is an angle such that
+cos(2β) = 1/
+√
+3. Equatorial states are those of the form |θ⟩ = 2−1/2(|0⟩ +eiθ|1⟩).
+43
+We demonstrate a family of decompositions with improved asymptotic scaling for such
+states, namely a stabilizer decomposition of |T⟩⊗m with 2m log2(3)/4 terms. This improves
+on the best known bound of 2m log2(7)/6, and is based on a stabilizer decomposition of|T⟩⊗6
+with 6 terms. The stabilizer rank of |T⟩⊗6 was conjectured to be 7 in [6]. We also ﬁnd a
+decomposition of|F⟩⊗m with the same number of terms. The stabilizer rank of |F⟩⊗m was
+conjectured in [6] to be equal to that of |T⟩⊗m, and the fact that our method applies to
+both types of magic state may be seen as evidence supporting this conjecture. Finally, for
+any equatorial state |θ⟩ we give a stabilizer decomposition of |θ⟩⊗m with 2m/2 terms. To
+our knowledge no such decompositions were previously known.
+The results in this chapter are based on joint work with David Gosset 1 and Hakop
+Pashayan 2.
+4.2 The stabilizer rank of cat states
+In this chapter we will make use of relations involving the stabilizer rank of certain en-
+tangled states. In this section we summarize these relations. For a single qubit state |ψ⟩,
+deﬁne the cat state
+|catn(ψ)⟩ := 2−1/2(|ψ⟩⊗n +|ψ⊥⟩⊗n), (4.1)
+where|ψ⊥⟩ is an orthogonal state to |ψ⟩. The phase on |ψ⊥⟩ is ﬁxed by assuming that
+⟨0|ψ⊥⟩ is real and positive (the case |ψ⟩ =|0⟩ is unimportant and we can discard it from
+this deﬁnition).
+The stabilizer ranks of|ψ⟩⊗n and|catn(ψ)⟩ are related as follows.
+Proposition 9. For any single qubit quantum state |ψ⟩, we have
+χ
+(
+ψ⊗n)
+≤ 4χ (catn(ψ)).
+Moreover, if|ψ⟩ is a magic state then
+χ
+(
+ψ⊗n)
+≤ 2χ (catn(ψ)).
+1Institute for Quantum Computing, Waterloo, Ontario, and the Department of Combinatorics and
+Optimization, University of Waterloo, Ontario.
+2Perimeter Institute, Waterloo, Ontario, and the Institute for Quantum Computing, Waterloo, Ontario.
+44
+Proof. We have
+|ψ⟩⊗n∝ (|ψ⟩⟨ψ|⊗ I)|catn(ψ)⟩.
+Decomposing|ψ⟩⟨ψ| into the four Pauli matrices implies
+χ(ψ⊗n)≤ 4χ (catn(ψ)). (4.2)
+If|ψ⟩ is a magic state then it is a +1 eigenstate of a Hermitian Cliﬀord C, and therefore
+|ψ⟩⟨ψ| = 1
+2(I +C) and χ(ψ⊗n)≤ 2χ (catn(ψ)).
+Next we describe sparse stabilizer decompositions of cat states of up to six qubits. In
+particular, we focus on cat states constructed from single qubit equatorial states and from
+magic states.
+Cat states constructed from equatorial states
+Let|θ⟩ = 2−1/2(|0⟩ +eiθ|1⟩). For n≤ 6, the states cat n(|θ⟩) can be decomposed in terms
+of at most 4 permutation-invariant stabilizer states, namely
+|0⟩⊗n, |1⟩⊗n, |En⟩≡ 2−(n−1)/2
+∑
+x even
+|x⟩, |Kn⟩≡ 2−(n−1)/2
+∑
+x even
+(−1)S(x)|x⟩, (4.3)
+where S(x) =∑
+j<kxjxk. The exact decompositions are given by
+|cat2(θ)⟩ = (|0⟩⊗2 +e2iθ|1⟩⊗2)/
+√
+2,
+|cat3(θ)⟩ = 1
+2|E3⟩ + (1
+2−e2iθ)|K3⟩
+|cat4(θ)⟩ =−ieiθ sinθ√
+2 |0⟩⊗4 + ie3iθ sinθ√
+2 |1⟩⊗4 +e2iθ|E4⟩,
+|cat5(θ)⟩ = (1/4)(1−e4iθ)|0⟩⊗5 +e3iθ cosθ|E5⟩ +ie3iθ sinθ|K5⟩
+|cat6(θ)⟩ = (1/4
+√
+2)(1−e5iθ)|0⟩⊗6 + (1/4
+√
+2)(e6iθ−e2iθ)|1⟩⊗6
++e3iθ cosθ|E6⟩ +ie3iθ sinθ|K6⟩.
+Therefore for any θ we have the upper bounds
+χ (cat2(θ)) =χ (cat3(θ)) = 2, χ (cat4(θ))≤ 3, χ (cat5(θ))≤ 3, χ (cat6(θ))≤ 4.
+45
+Cat states constructed from the T state
+For some values of θ these upper bounds are not tight. For example, the states cat n(T )
+constructed from|T⟩ =|0⟩ +eiπ/4|1⟩ satisfy
+χ (cat2(T )) = 1, χ (cat4(T )) = 2, χ (cat6(T ))≤ 3.
+The above can be veriﬁed by noting that for θ =π/4 certain terms in the above decompo-
+sitions combine into stabilizer states, reducing the overall number of stabilizer terms.
+Cat states constructed from the F state
+The face state is given by
+|F⟩ = cos(β)|0⟩ +eiπ/4 sin(β)|1⟩ (4.4)
+whereβ∈ [0,π/ 2] is an angle such that cos(2β) = 1/
+√
+3. For n≤ 6, the states catn(F ) ad-
+mit low rank stabilizer decompositions similar to those of theT state. The most important
+two are cat2(F ) and cat 6(F ):
+|cat2(F )⟩ = (|0⟩⊗2 +i|1⟩⊗2)/
+√
+2,
+|cat6(F )⟩ = (2/3)|ψ1⟩ +e3iπ/4(2/3)|ψ2⟩− eiπ/4(2/3)|ψ3⟩
+where
+|ψ1⟩ = 2−1/2(|0⟩⊗6−i|1⟩⊗6)
+|ψ2⟩ = 2−3
+∑
+x∈{0,1}6
+(−i)|x| mod 2|x⟩
+|ψ3⟩ = 2−3
+∑
+x∈{0,1}6
+(−1)S(x)+|x||x⟩. (4.5)
+These decompositions imply
+χ(cat2(F )) = 1, χ (cat6(F ))≤ 3. (4.6)
+46
+Contracting cat states
+The stabilizer rank of|catn⟩, constructed from any single qubit state|ψ⟩ (which we omit to
+ease the notation), can be upper bounded via certain tensor contractions. Here, we explain
+the idea by considering an example. We can prepare cat states by contracting other cat
+states together, for instance
+(
+⟨T|⊗2 +⟨T⊥|⊗2
+)
+on qubits 6 & 7
+((
+|T⟩⊗6 +|T⊥⟩⊗6
+)(
+|T⟩⊗6 +|T⊥⟩⊗6
+))
+=|T⟩⊗10 +|T⊥⟩⊗10
+(4.7)
+Proposition 10. Let|φ⟩ be an n qubit state and |φ′⟩ be a state on s < nqubits. Then
+the stabilizer rank of the state ⟨φ′|φ⟩, where the contraction is on some subset of s qubits,
+satisﬁes
+χ(⟨φ′|φ⟩)≤χ(φ)χ(φ′). (4.8)
+Proof. For every stabilizer decomposition of |φ⟩ and|φ′⟩ using stabilizer states {|q⟩} and
+{|q′⟩} respectively, there is a decomposition of ⟨φ′|φ⟩ using stabilizer states{⟨q′|q⟩}.
+Combining eq. (4.7) and Proposition 10, we obtain the upper bound
+χ(cat10(T ))≤χ(cat2(T ))χ(cat6(T ))2≤ 9, (4.9)
+where we used χ(cat2(T )) = 1 and χ(cat6(T ))≤ 3.
+More generally, we can place k copies of|catn⟩ in a 1D chain, and then connect each
+pair of nearest neighbours by acting with the contraction ⟨cat2| on one qubit from each.
+This prepares the state|catm⟩, where m =nk− 2(k− 1), implying that
+χ(catm)≤χ(cat2)2(k−1)χ(catn)k. (4.10)
+4.3 Upper bounds on the stabilizer rank of n copies
+of single qubit states
+We now consider the stabilizer rank of |ψ⟩⊗n, where|ψ⟩ is a single qubit state. We start
+by giving a quick proof of two improved upper bounds, and then, in Theorems 11 and 12,
+show how to improve them further.
+47
+Proposition 9 implies that
+χ(T⊗6)≤ 6, (4.11)
+which follows sinceχ(cat6(T ))≤ 3 and|T⟩⟨T| = 1
+2(I +C), where C is the Cliﬀord unitary
+whose +1 eigenstate is|T⟩ 3. Equation (4.11) implies an improved upper bound
+χ(T⊗m)≤χ(T⊗6)m/6≤ 2τm (4.12)
+where τ = log2(6)/6≈ 0.431. An identical argument holds for the face state |F⟩.
+Similarly, for any equatorial single qubit state |θ⟩ =|0⟩ +eiθ|1⟩, the stabilizer rank of
+|θ⟩⊗m is at most 2 2m/3. This is true since
+χ(θ⊗6)≤ 16, (4.13)
+where we used Proposition 9 and noted that the stabilizer rank of|cat6(θ)⟩ is at most four.
+Therefore
+χ(θ⊗m)≤χ(θ⊗6)m/6≤ 22m/3. (4.14)
+We can improve the two upper bounds in eq. (4.12) and eq. (4.14) by contracting cat
+states, which is shown in the next two theorems. Namely, the improved upper bounds for
+the stabilizer rank of m copies of magic/equatorial states are respectively given by 2 αm
+and 2m/2, where α = log2(3)/4≈ 0.3962. Moreover, the proofs are constructive, meaning
+that we obtain decompositions which achieve these bounds.
+Theorem 11. Let|ψ⟩ be a single qubit magic state. Let α > 0 be the smallest number
+such that χ(ψ⊗m)≤ 2αm for all m. Then
+α≤ log2(3)
+4 ≈ 0.3962. (4.15)
+Proof. Since|ψ⟩ is a magic state it is Cliﬀord equivalent to either|T⟩ or|F⟩. Without loss
+of generality let it be equivalent to |T⟩. For ease of notation set
+|Ψn⟩ =|catn(T )⟩.
+3Namely C =e−iπ/4SX where S is phase gate
+48
+∗ ∗ ∗ ∗ ... ∗ ∗
+∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ∗ ... ∗ ∗ ∗ ∗ ∗ ∗
+Figure 4.1: Top: the chain used for proving Theorem 11. There are k vertices and k− 1
+edges. Every vertex is a |Ψ6⟩ state and every edge is a⟨Ψ2| contraction on one qubit from
+each of the vertices it contains. Bottom: the chain used for proving Theorem 12. There
+are 5k + 1 vertices and k hyper-edges. Every vertex is a |Φ6⟩ state and every hyper-edge
+is a⟨Φ6| contraction on one qubit from each of the vertices it contains.
+Consider the 1D chain in Figure 4.1 Top. There are k vertices and k− 1 edges. Every
+vertex is a |Ψ6⟩ state and every edge is a ⟨Ψ2| contraction on one qubit from each of the
+vertices it contains. The resulting state after the contraction is
+(
+⟨Ψ2|⊗k−1
+)
+edges
+(
+|Ψ6⟩⊗k
+)
+vertices
+∝| Ψ4k+1⟩. (4.16)
+Since χ(Ψ2) = 1 and χ(Ψ6)≤ 3, we have
+χ (Ψ4k+1)≤ 3k, (4.17)
+which implies
+χ(T⊗4k+1)≤ 2× 3k, (4.18)
+where we used Proposition 9 and noted that |T⟩⟨T| = 1
+2χ(I +C) for some Cliﬀord unitary
+C. Using Cliﬀord invariance of the stabilizer rank, sub-multiplicativity of the stabilizer
+rank, and the bound eq. (4.18), we obtain
+χ(ψ⊗m) =χ(T⊗m)≤χ(T⊗4k+1)m/(4k+1)≤ (2× 3k)m/(4k+1)→ 2αm, (4.19)
+as k→∞ , where α = log2(3)
+4 .
+Theorem 12. For any equatorial single qubit state |θ⟩ =|0⟩ +eiθ|1⟩, the smallest number
+β >0 such that χ(θ⊗m)≤ 2βm for all m satisﬁes
+β≤ 1
+2. (4.20)
+49
+Proof. For ease of notation set
+|Φn⟩ =|catn(θ)⟩.
+Consider the chain in Figure 4.1 Bottom. There are 5 k + 1 vertices and k hyper-edges.
+Every vertex is a|Φ6⟩ state and every hyper-edge is a⟨Φ6| contraction acting on one qubit
+from each of the vertices it contains. The resulting state after the contraction is given by
+(
+⟨Φ6|⊗k
+)
+hyper-edges
+(
+|Φ6⟩⊗5k+1
+)
+vertices
+∝| Φ24k+6⟩. (4.21)
+Since χ(Φ6)≤ 4 for any equatorial state, we have
+χ (Φ24k+6)≤ 46k+1, (4.22)
+which implies
+χ(θ⊗24k+6)≤ 46k+2, (4.23)
+where we used eq. (4.2) and noted that |θ⟩⟨θ| can be written as a sum of four Cliﬀords.
+Using sub-multiplicativity of the stabilizer rank and the bound eq. (4.23), we obtain
+χ(θ⊗m)≤χ(θ⊗24k+6)m/(24k+6)≤ (46k+2)m/(24k+6)→ 2m/2, (4.24)
+as k→∞ .
+4.4 Discussion, conjectures, and open problems
+A key idea in this chapter is that the stabilizer rank of cat states grows more slowly than
+the stabilizer rank of the state they are constructed from. To get a feel of why this is the
+case, let us consider|T⟩ =|0⟩ +eiπ/4|1⟩ and expand (ignoring normalization)
+|T⟩⊗m =
+∑
+x∈Fm
+2
+ω|x||x⟩,
+|T⟩⊗m +|T⊥⟩⊗m =
+∑
+x∈Fm
+2 :x even
+ω|x||x⟩, (4.25)
+where ω = exp(iπ/4) and |x| is the Hamming weight of the bit string x. The cat state
+looks the same as the original state, except its support is restricted to the even parity
+50
+subspace of Fm
+2 . In both cases in eq. (4.25), the problem is to ﬁnd a sparse decomposition
+of the hamming weight phase ω|x| in terms of phases of the form i𝓁(x)(−1)q(x) where 𝓁 and
+q are linear and quadratic functions 4. On the even parity subspace we have ω|x| =i|x|/2∈
+{±1,±i}, and moreover, on this subspace the function |x|/2 is congruent modulo 4 to
+the totally symmetric quadratic polynomial S(x) =∑
+i<jxixj, and therefore i|x|/2 =iS(x).
+This almost has the right form of a stabilizer state. It is then not too surprising that the
+stabilizer rank of the highly entangled cat states can be lower than the stabilizer rank of
+the product states they are constructed from.
+For concreteness let us discuss two examples; the two-qubit and six-qubit cat states.
+The fact that these states have low stabilizer rank is a key ingredient in the proof of
+Theorem 11. In both cases, special cancellations/combinations allow for low rank stabilizer
+decompositions. The two-qubit cat state is a stabilizer state
+|T⟩⊗2 +|T⊥⟩⊗2 =|00⟩ +i|11⟩. (4.27)
+For|T⟩⊗6 +|T⊥⟩⊗6, the even parity subspace of 6-bit strings contains one string of weight
+0, one string of weight 6, and an equal number of strings of weights 2 and 4. Let’s consider
+two quadratic phase functions: the ﬁrst is the trivial phase f1(x) = 1 and the second is
+the totally-symmetric quadratic phase f2(x) = (−1)
+∑
+i<jxixj. The function f1 is of course
+constant on all bit strings, and the function f2 distinguishes between strings of weights 2
+and 4. Therefore we can get the correct phase ω|x| on all bit strings of weights 2 and 4 by
+a linear combination of the two stabilizer states
+∑
+x even
+f1(x)|x⟩,
+∑
+x even
+f2(x)|x⟩.
+However, the phases on|0⟩⊗6 and|1⟩⊗6 will be incorrect. By a stroke of luck, the required
+corrections on|0⟩⊗6 and|1⟩⊗6 diﬀer only by a phase multiple−i. Therefore both corrections
+can be applied with a single additional stabilizer state, namely
+|0⟩⊗6−i|1⟩⊗6.
+This gives us a decomposition of |T⟩⊗6 +|T⊥⟩⊗6 in terms of only 3 stabilizer states.
+4Recall that every stabilizer state on m qubits has the form
+∑
+x∈A
+i𝓁(x)(−1)q(x)|x⟩. (4.26)
+where A is an aﬃne subspace of Fm
+2 , q is a quadratic function on A, and 𝓁 is a linear function on A.
+51
+Unfortunately, for m > 6 a similar construction fails. A simple explanation is that
+there are too many m-bit strings of weight 6 in this case, and the correction we need to
+apply requires too many additional stabilizer terms. The best decomposition we found for
+|T⟩⊗7 +|T⊥⟩⊗7 requires six stabilizer states, which is too many for our purposes. It is an
+open question whether more sparse decompositions exist for m = 7.
+In order for a decomposition of |T⟩⊗7 +|T⊥⟩⊗7 to improve the upper bound in Theo-
+rem 11, it needs to consist of no more than three stabilizer states, which in our opinion is
+unlikely to exist. For|T⟩⊗8 +|T⊥⟩⊗8, we need a decomposition consisting of no more than
+ﬁve stabilizer states. We leave it as an open question whether such a decomposition exists.
+Note that it is not hard to construct a decomposition of |T⟩⊗8 +|T⊥⟩⊗8 consisting of six
+stabilizer terms, for instance via the contraction
+(
+⟨T|⊗2 +⟨T⊥|⊗2
+)
+on qubits 4 & 5
+((
+|T⟩⊗4 +|T⊥⟩⊗4
+)(
+|T⟩⊗6 +|T⊥⟩⊗6
+))
+=|T⟩⊗8 +|T⊥⟩⊗8
+(4.28)
+and the fact that|T⟩⊗2 +|T⊥⟩⊗2,|T⟩⊗4 +|T⊥⟩⊗4, and|T⟩⊗6 +|T⊥⟩⊗6 can be decomposed
+in terms of one, two, and three stabilizer states, respectively.
+The second important idea is contracting cat states to produce other cat states, as in
+eq. (4.28) above. Intuitively, this provides a systematic way of constructing decompositions
+of|T⟩⊗m +|T⊥⟩⊗m that consist of highly entangled stabilizer states. These decompositions
+can then be converted to stabilizer decompositions of|T⟩⊗m itself, for instance by projecting
+the ﬁrst qubit onto|T⟩. Thus cat states are useful not only because of their low stabilizer
+rank, but also because they allow us to include in the decomposition of |T⟩⊗m stabilizer
+states which have long range entanglement, which can only improve the sparsity compared
+to decompositions which are local in this sense.
+Can the bound in Theorem 11 be improved? We can consider a generalization of
+Figure 4.1 Top to an arbitrary graph G with vertex set V and edge set E. Proceeding
+similarly to the proof of Theorem 11, we place a cat state of 6 qubits at each vertex, and
+contract pairs in the edge set E with cat states of two qubits. If the graph is connected,
+then the resulting state after the contraction is a cat state on 6 |V|− 2|E| qubits. The
+number of stabilizer terms in the decomposition will be 3|V|. Proceeding as in the proof of
+Theorem 11, the upper bound on α (deﬁned in the statement of Theorem 11) obtained in
+this way is
+α≤ log2(2× 3|V|)
+6|V|− 2|E| . (4.29)
+52
+To minimize this upper bound for ﬁxed |V| we need to have the minimum number of
+edges, subject to the graph being connected. This is equivalent to picking G to be a
+tree, so that the number of edges is |E| =|V|− 1. Therefore the graph used to prove
+Theorem 11 is optimal amongst such strategies. We can also show that we cannot do any
+better by a combination of vertices and edges consisting of cat states on m≤ 6 qubits. In
+other words, improving this upper bound will require something beyond simply considering
+other contraction graphs and other known decompositions of cat states.
+On the other hand, we conjecture that the upper bound in Theorem 11,α≤ log2(3)/4≈
+0.3962, is not tight. The reason is the following. By sub-multiplicativity of the stabilizer
+rank, we know that the stabilizer rank of two copies of |cat6⟩ =|T⟩⊗6 +|T⊥⟩⊗6 is at most
+9, with equality iﬀ χ(|cat6⟩|cat6⟩) = χ(|cat6⟩)χ(|cat6⟩). There are no known examples of
+quantum states whose stabilizer rank is multiplicative for two copies, and this requirement
+seems quite stringent. Therefore it is quite likely that
+χ(|cat6⟩|cat6⟩) ≤
+conjecture
+8. (4.30)
+Plugging this in the proof of Theorem 11 gives the upper bound
+α ≤
+conjecture
+3
+8≈ 0.375. (4.31)
+53
+Chapter 5
+The stabilizer rank and
+continuous-time evolution
+5.1 Introduction
+Stabilizer-rank methods are useful for simulating quantum circuits, and a natural question
+is whether these ideas can be applied to simulate other types of quantum dynamics, such
+as continuous-time evolution. In this chapter we consider such applications.
+The question we consider in this chapter is how to ﬁnd low-rank stabilizer decompo-
+sitions of the state eiHt|0⟩⊗n, where H is an n-qubit Hamiltonian. As we have previously
+seen, the cost of classically simulating this state scales linearly in the number of stabilizer
+terms in such a decomposition, provided we can compute the terms eﬃciently. Here by
+classical simulation we mean sampling bit strings from a distribution close to the distribu-
+tion obtained by measuring a subset S of the qubits in the computational basis, in other
+words, approximately sampling from the probability distribution
+P (x) :=⟨0n|e−iHtΠxeiHt|0n⟩, x ∈ F|S|
+2 , (5.1)
+where Πx acts as|x⟩⟨x| on S and as identity on all other qubits.
+One straightforward way to construct low rank stabilizer decompositions ofeiHt|0⟩⊗n is
+to ﬁnd an approximate Cliﬀord decomposition of the operatoreiHt with small 1-norm‖c‖1,
+and then use randomized sparsiﬁcation to ﬁnd an approximate stabilizer decomposition of
+eiHt|0⟩⊗n within error ϵ using‖c‖2
+1/ϵ2 stabilizer states. As before, this is useful as long as
+‖c‖2
+1/ϵ2≪ 2n.
+54
+There are a number of diﬀerent ways to ﬁnd approximate decompositions of the operator
+eiHt as a sum of Cliﬀords. For example, we can start with either a Lie product formula
+or a truncated series expansion, and then apply randomized sparsiﬁcation to reduce the
+number of terms. This approach somewhat resembles well known methods such as worldline
+Monte Carlo and the stochastic series expansion, which are commonly used to compute
+static properties of the Hamiltonian, such as the ground state energy or the partition
+function.
+The time evolution of a non-eigenstate of a spin Hamiltonian can be much harder to
+simulate than static properties of the Hamiltonian. For example, the ubiquitous class of
+stoquastic Hamiltonians, i.e. sign-problem free Hamiltonians, have eﬃciently-computable
+static properties [36], and yet their time evolution is universal for quantum computation
+[37]. As another example, computing the ground state energy of 1D nearest neighbour
+Hamiltonians can be done eﬃciently using matrix product states [38], and yet simulating
+the time evolution of such Hamiltonians is likely to be classically hard [39].
+In this chapter the Hamiltonian is given as
+H =
+K∑
+j=1
+ajQj, (5.2)
+where Qj has an eﬃcient classical description and ‖Qj‖≤ 1. For example the operator
+exp(iθQj) may be written as a sum of a small number of Cliﬀords for all θ. Such Qj may
+be non-local (for example, n-qubit Pauli operators). We assume that the number of terms
+K is polynomial in n, and that the aj are positive by absorbing signs into the Qj.
+For example, by taking{Qj} to be Pauli operators and using the ﬁrst-order Suzuki in-
+tegrator, we ﬁnd that the required number of stabilizer states is, up to a polynomial factor,
+exp(γ‖a‖1t), where γ = 2
+√
+2− 2≈ 0.83. If instead we apply randomized sparsiﬁcation to
+a truncated Taylor approximation
+eiHt≈Ts,r =
+( r∑
+j=0
+(iHt/s)j
+j!
+)s
+(5.3)
+then the number of stabilizer states required for the same error guarantee is, up to a
+polynomial factor, exp(2‖a‖1t).
+This reduction in the exponent is interesting because it directly ameliorates the ex-
+ponential scaling of the required classical resources to simulate short time evolution. For
+example, for ﬁxed depth t = 1/ log2(e) and ﬁxed ‖a‖1/n = 1, the required classical re-
+sources scale as 2 γn. The minimum possible γ is determined by the stabilizer extent of
+55
+eiHt|0⟩n. We give examples of how to reduce γ in section 5.4 by ﬁnding more sparse
+stabilizer decompositions.
+5.2 Cliﬀord decompositions of the time evolution op-
+erator
+There are a number of ways to ﬁnd approximate decompositions of the operator eiHt as a
+sum of Cliﬀords. For example, if we are given H in the form
+H =
+∑
+j
+ajQj, (5.4)
+where each Qi is “easy to exponentiate” then we can use a Lie product formula. By easy
+to exponentiate we mean that, for every angle θ and every j, we can eﬃciently compute a
+Cliﬀord decomposition
+exp(iθQj) =
+∑
+k
+cjkCjk (5.5)
+and sample the distribution |cjk|/‖cj‖1, where‖cj‖1 =∑
+k|cjk|. If a Lie product formula
+U consists of products of such exponentials and satisﬁes
+‖U−eiHt‖≤ ϵ (5.6)
+then we can approximateeiHt|0n⟩ by a sum of stabilizer states obtained by multiplying the
+Cliﬀord expansion of each exponential. We can then implement randomized sparsiﬁcation
+by choosing Cjk with probability|cjk|/‖cj‖1, for each exponential in the product formula.
+This samples world-line trajectories in which the state at every time step is a stabilizer
+state. By averaging enough trajectories the state we obtain is close to eiHt|0n⟩ with high
+probability. The number of required trajectories, i.e. the number of stabilizer terms in
+the decomposition, depends on the particular Lie product formula and the decompositions
+eq. (5.5).
+As an example of this approach, we consider the Trotter-Suzuki ﬁrst order integrator
+Us :=
+[(
+eita1Q1/2s...e itaKQK/2s)(
+eitaKQK/2s...e ita1Q1/2s)]s
+. (5.7)
+To bound the approximation error‖eiHt−Us‖ byδ it is suﬃcient to takes =
+√
+(2K‖a‖∞t)3/δ,
+where‖a‖∞ = maxi|ai| [40]. More sophisticated product formulas can reduce the number
+56
+of gates required for a given error tolerance. We will stick to eq. (5.7) to simplify the
+analysis.
+The stabilizer extent of Us can be upper bounded by decomposing each exponential
+in terms of Cliﬀords. For example, if Q is a Pauli operator then we can use the optimal
+decomposition eq. (3.12)
+eiθQ = (cosθ− sinθ)I + (
+√
+2 sinθ)eiπ
+4Q. (5.8)
+Using Lemma 4 (the randomized sparsiﬁcation lemma) we obtain
+ξ(Us)≤
+K∏
+j=1
+(
+cos(ajt/2s) + (
+√
+2− 1) sin(ajt/2s)
+)4s
+. (5.9)
+Note that for any s the right hand side is less than e(2
+√
+2−2)‖a‖1t, and for large s we have
+lim
+s→∞
+K∏
+j=1
+(
+cos(ajt/2s) + (
+√
+2− 1) sin(ajt/2s)
+)4s
+=e(2
+√
+2−2)‖a‖1t. (5.10)
+This implies
+ξ(Us)≤e(2
+√
+2−2)‖a‖1t. (5.11)
+To compare this to a more standard approach, let us use the same Pauli decomposition of
+the Hamiltonian in a truncated series approximation
+eiHt≈Ts,r :=
+( r∑
+j=0
+(iHt/s)j
+j!
+)s
+. (5.12)
+To bound the error by δ one can take (see for example [41])
+s =‖a‖1t, r = log log(s/δ)
+log(s/δ) . (5.13)
+To perform randomized sparsiﬁcation with this series, we start by writing
+Ts,r =
+
+Ns,r
+r∑
+j=0
+p(j)
+∑
+z∈Zj
+K
+q(z)(ijQz1...Q zj)
+
+
+s
+(5.14)
+57
+����������������
+�������-������
+�=�
+�=�
+�=�
+2 3 4 a1 t s
+γ a1 t
+2 a1 t
+Log(ξ)
+Figure 5.1: The exponent as a function of the slicing parameter s for the Trotter-Suzuki
+decomposition and the truncated series decomposition for a collection of truncation pa-
+rameters r. The cost of simulating exp( iHt)|0n⟩ scales linearly in ξ. Here γ = 2
+√
+2− 2.
+For the purpose of illustration we set t =π/4, K = 100, and‖a‖1 =Kπ/4.
+where p and q are probability distributions given by
+p(j) =N−1
+s,r
+(‖a‖1t/s)j
+j! , q (z) = az1...a zj
+‖a‖j
+1
+(5.15)
+and Nr,s is the normalization constant
+Ns,r =
+r∑
+j=0
+(‖a‖1t/s)j
+j! . (5.16)
+To randomly sparsify this decomposition, we start with |0n⟩, and for every time slice we
+multiply it by a string of Pauli operators and a weight, ( ijNs,r)Qz1...Q zj, chosen with
+probability p(j)q(z). We need to average N 2s
+s,r/ϵ2 such trajectories to guarantee that the
+resulting state approximates eiHt|0⟩⊗n with high probability. Figure 5.1 compares this to
+the Trotter-Suzuki method.
+58
+Interestingly, if instead of eq. (5.8) we use the more usual decomposition
+eiθQ = (cosθ)I + (i sinθ)Q, (5.17)
+in the Trotter-Suzuki method, then a similar calculation shows that the number of required
+trajectories, up to a polynomial factor, is exp(2‖a‖1t). In other words, the amelioration of
+the exponential scaling is wiped out. An intuitive (but heuristic) explanation is that Pauli
+operators permute the computational basis up to phases, and so the sampled trajectories
+for both the truncated series and the Trotter-Suzuki with eq. (5.17) are over a classical
+state space, whereas by using eq. (5.8) the trajectories are over highly-entangled stabilizer
+states, which somehow allows for a more sparse representation of exp( iHt)|0n⟩.
+We should emphasize that there are numerous techniques for improving the world-
+line and stochastic series approaches, such as using loop and cluster updates. These are
+typically applied in the context of simulating imaginary time evolution, but some of these
+ideas can be adapted to the real time case. The above discussion only compares the most
+crude way to apply these methods. However, there is already a signiﬁcant improvement
+at this base level, and more clever ways of constructing low-rank approximate stabilizer
+decompositions may be possible.
+5.3 Simulating continuous-time evolution using stabi-
+lizer decompositions
+We consider two applications of stabilizer rank methods: the ﬁrst is approximating an
+amplitude⟨x|eiHt|0n⟩, where x∈ Fn
+2 is a computational basis state (an n-bit string), and
+the second is sampling bit strings from a distribution which approximates the probability
+distribution
+P (y) :=⟨0n|e−iHtΠyeiHt|0n⟩,
+where Πy is a projector onto the eigenspace of the outcome y∈ F|S|
+2 when measuring a
+subset S of the qubits in the computational basis.
+We can apply the approximate sampling algorithm of Ref. [8], and the additive-error
+amplitude approximation algorithm of section 3.4, to the Trotter circuit Us. The resulting
+classical simulations require poly( n) bits of memory and have run times in which the
+only exponential factor is the number of stabilizer terms in an approximate stabilizer
+decomposition of eiHt|0⟩⊗n. For concreteness we will restrict our attention to a Pauli
+59
+decomposition of the Hamiltonian
+H =
+∑
+j
+ajQj, (5.18)
+but generalizing the results to any decomposition in which Qj can be easily exponentiated
+is straightforward.
+Theorem 13. The time cost of classically approximating ⟨x|eiHt|0n⟩ up to additive error
+ϵ using the algorithm in section 3.4 is
+O
+(
+e(2
+√
+2−2)‖a‖1tn2(K/ϵ)5/2(‖a‖∞t)3/2 log(δ−1)
+)
+,
+where‖a‖∞ = maxiai.
+Proof. We can produce an estimate η of the amplitude ⟨x|Us|0n⟩, by using the algorithm
+in section 3.4, with the Cliﬀord decompositions in eq. (5.8). The number of iterations the
+algorithm in section 3.4 requires to bound the additive error on η byϵ/2 with probability
+at least 1−δ is
+O
+(
+e(2
+√
+2−2)‖a‖1tϵ−2 log(δ−1)
+)
+.
+Each iteration requires performing 2sK Cliﬀord updates, each of which takes time O(n2).
+If we choose s =
+√
+(2K‖a‖∞t)3/ϵ, then‖eiHt−Vs‖≤ ϵ/2. By the triangle inequality our
+estimate η satisﬁes|η−⟨x|eiHt|0n⟩|≤ ϵ with probability at least 1−δ.
+We can also use this stabilizer decomposition to sample from the outcome distribution
+associated with measuring any subset S of the qubits in the computational basis, i.e. the
+distribution
+P (y)≡⟨ 0n|e−iHtΠ(y)eiHt|0n⟩, (5.19)
+where y∈ F|S|
+2 and Π(y) acts as|y⟩⟨y| on S and identity on the rest of the qubits.
+Theorem 14. The distribution P (y) can be approximately sampled from with error ϵ in
+total variation distance using the algorithm in section 2.2.1. The time cost scales as
+O
+(
+e(2
+√
+2−2)‖a‖1tn2(K/ϵ)5/2(t‖a‖∞)3/2
+)
++O(e(2
+√
+2−2)‖a‖1tn3|S|3ϵ−2 log(δ−1)).
+where δ is the failure probability of the algorithm.
+60
+Proof. As in the proof of Theorem 13, we can choose s =O
+(√
+(2K‖a‖∞t)3/η
+)
+so that
+‖Us|0n⟩− eiHt|0n⟩‖≤ η/2.
+Now we obtain an approximate stabilizer decomposition ofeiHt|0n⟩ by randomly sparsifying
+Us|0n⟩. By eq. (5.11), we can approximate Us|0n⟩ up to error η/2 by a linear combination
+of O(e(2
+√
+2−2)‖a‖1tη−2) stabilizer states. Denote this linear combination by |ψ⟩. Then
+‖|ψ⟩− eiHt|0n⟩‖≤ η.
+Each of the states in the decomposition of |ψ⟩ takes time O(sKn 2) to compute, therefore
+the time cost of producing this approximation is
+O
+(
+e(2
+√
+2−2)‖a‖1tn2(K/η)5/2(t‖a‖∞)3/2
+)
+. (5.20)
+Given this approximation, we can proceed as in section 2.2.1. Namely, approximately
+sampling the distribution P (y) up to error ϵ in total variation distance can be done for a
+suitable choice of η =O(ϵ) by approximately sampling the distribution
+˜P (y)≡⟨ψ|Π(y)|ψ⟩
+‖ψ‖2 .
+The time cost of producing a sample in this way scales asO(e(2
+√
+2−2)‖a‖1tn3|S|3ϵ−2 log(δ−1)).
+5.4 Discussion and open problems
+The method discussed in this chapter bears a close resemblance with Quantum Monte
+Carlo (QMC) methods. One of the most important QMC methods is path integral Monte
+Carlo [42], which is typically used to simulate static properties of the Hamiltonian, such
+as its ground state energy and partition function. In its most general form, this method
+is based on a Markov chain Monte Carlo, in which the state space is deﬁned as the set of
+trajectories of the form ( v1,v 2,...,v L), where the vi are states from a product basis and
+L is the number of time slices. Update rules, also known as Metropolis moves, are deﬁned
+in a certain way that makes use of properties of the Hamiltonian. The runtime of such
+algorithms depends on the mixing time of the chain. In important cases, such as when the
+61
+Hamiltonian is 1D and stoquastic, the chain can be shown to mix rapidly under certain
+update rules [60].
+An important variant of stabilizer rank methods relies on a similar Metropolis algorithm
+in which the probabilities of local bit ﬂip moves are determined by ratios of estimates of the
+associated amplitudes [8]. The algorithm was found to numerically outperform the method
+based on the norm estimation algorithm, despite having no rigorous error guarantees if the
+mixing time of the chain is unknown, as is generally the case.
+For the continuous-time case, a similar algorithm can be implemented using additive
+error estimates of the amplitude ⟨x|eiHt|0n⟩ obtained using Theorem 13. The state space
+of the Markov chain is the set of computational basis states {|y⟩}, and the moves are
+single bit ﬂips chosen with probability that depends on the ratio of the estimates of the
+two associated amplitudes. When the chain equilibrates we obtain a ﬁnal state from a
+distribution close to P (y)≡⟨ 0n|e−iHtΠ(y)eiHt|0n⟩, although the mixing time of the chain
+is generally unknown. The only other super-polynomial scaling comes from the sample
+complexity required to estimate an amplitude using stabilizer state monte carlo, namely
+eγt‖a‖1.
+To reduce the exponent we need to search for more sparse stabilizer decompositions of
+the ﬁnal state. If the Hamiltonian is given as a sum of 2-local terms,
+H =
+∑
+j
+ajAj (5.21)
+then one way to do this is to numerically ﬁnd the optimal Cliﬀord decomposition of each
+Trotter gate exp(iθAj) using convex optimization. For 3-local Hamiltonians this may also
+be possible with more computational resources.
+Sometimes we can use the idea of decomposing matrix products of gates, as in sec-
+tion 3.3, to ﬁnd more sparse decompositions. One example where this is possible is
+H =
+∑
+<i,j,k>
+(XiXjXk +YiYjYk +ZiZjZk), (5.22)
+where the sum is over three-neighbors in a chain. For any neighbours ( i,j,k ), the set
+{XiXjXk,YiYjYk,ZiZjZk}
+is equivalent to{Xi,−Yi,Zi} up to conjugation by a Cliﬀord, and therefore we can use the
+results of section 3.3 to ﬁnd optimal Cliﬀord decompositions of the Trotter step
+exp (iθXiXjXk) exp (iθZiZjZk) exp (iθYiYjYk).
+62
+Using convex optimization, we ﬁnd the optimal single qubit decomposition
+exp (iθXi) exp (iθZi) exp (−iθYi) =c1(θ)I +c2(θ)Si +c3(θ)HiSi, (5.23)
+where Si and Hi are the phase and Hadamard gates on qubit i and
+c1(θ) = cos(2θ)[cos(θ)− sin(θ)]
+c2(θ) = eiπ/4
+√
+2 [cos(θ)− cos(3θ)]
+c3(θ) =eiπ/4 sin(2θ)[cos(θ)− sin(θ)]. (5.24)
+We get the optimal decomposition of the Trotter step by conjugating eq. (5.23) with any
+3-qubit entangling Cliﬀord which permutes X1 → X1X2X3, Z1 → Z1Z2Z3 (and there-
+fore Y1 → −Y1Y2Y3). This signiﬁcantly reduces the number of stabilizer terms in the
+approximate stabilizer decomposition of eiHt|0n⟩, in a similar way to the decompositions
+in section 3.3.
+More generally, for a decomposition H = ∑
+jAj we try to ﬁnd Cliﬀord decomposi-
+tions of the Trotter steps exp( iθAj) with minimum 1-norm. The framework presented in
+this chapter allows us to use any decomposition of the Hamiltonian, even if the terms are
+non-local. Although this involves ﬁnding sparse Cliﬀord decompositions for many-qubit
+gates, which is computationally diﬃcult, it leaves open the possibility of much faster simu-
+lations. Combining this with the the fact that there are various ways to directly ameliorate
+the exponential scaling, suggests that this approach deserves further study. An interest-
+ing question is how mild we can make the exponential scaling for a given Hamiltonian.
+This question is likely to be very diﬃcult to answer. A similar problem, namely proving
+super-polynomial lower bounds on the approximate stabilizer rank of product states, is
+remarkably diﬃcult [8].
+63
+Chapter 6
+Linear constraint systems
+6.1 Introduction
+Linear constraint systems (LCS) are generalizations of the simple proofs of contextuality of
+Peres and Mermin [20, 19]. These proofs are based on inconsistent systems of linear equa-
+tions over the binary ﬁeld that nevertheless admit solutions if we allow for non-commutative
+versions of the variables, i.e. binary quantum observables. A gap between classical and
+quantum satisﬁability in this setting is a proof of contextuality [43]. In addition, such a gap
+can be used to deﬁne a non-local game which can be won with certainty by quantum play-
+ers but not by classical players, i.e. a pseudo-telepathic game [21]. This link has turned out
+to be immensely useful in the study of quantum non-locality [17, 44, 18, 23, 25, 24, 45]. In
+particular, games constructed from LCSs are suitable for studying the separation between
+diﬀerent models of quantum correlations, such as the tensor-product and the commuting-
+operator models [23, 25, 24]. Further, non-local games constructed in this way can be used
+for devising robust self-testing protocols [46].
+An example of a linear constraint system is the Peres-Mermin square, depicted in ﬁg. 6.1
+64
+(Left). It corresponds to a system of linear equations modulo 2
+x1 +x2 +x3 = 0
+x4 +x5 +x6 = 0
+x7 +x8 +x9 = 0
+x1 +x4 +x7 = 0
+x2 +x5 +x8 = 0
+x3 +x6 +x9 = 1
+(6.1)
+It is easy to check that this system has no classical solutions with binary variables xi. Yet
+the system of operator equations
+A1A2A3 =I
+A4A5A6 =I
+A7A8A9 =I
+A1A4A7 =I
+A2A5A8 =I
+A3A6A9 =−I
+(6.2)
+constrained by the requirement that the operators in each equation pairwise commute and
+square to the identity, does have a solution, depicted in ﬁg. 6.2 (Left). While it is easy to
+check the satisﬁability of eq. (6.1), determining whether eq. (6.2) has an operator solution
+is trickier, intuitively because we need to check every possible dimension these operators
+may act on (including countable inﬁnity).
+Quantum satisﬁability of LCSs over F2 has an elegant characterization if every variable
+appears in exactly two equations. Namely, it was shown in [17] that a LCS of that form is
+“magic”, i.e. has a satisﬁability gap for some choice of right-hand side in eq. (6.1), if and
+only if a certain graph constructed from the LCS is non-planar 1. Planarity of a graph can
+be checked eﬃciently in the size of the graph, and so this oﬀers a complete and eﬃciently
+checkable characterization. However, it is unclear how to extend this characterization to
+d> 2, or to the more general case where variables appear in any number of constraints.
+Beyond the case where each variable appears in exactly two constraints, whether or not
+a binary LCS has a quantum solution was addressed in [18, 23], where it was found that
+1A graph is planar if it can be drawn without the lines representing edges intersecting.
+65
+this question has two other equivalent forms. The ﬁrst form involves quantum strategies
+for certain non-local games constructed from the LCS, and the second form involves a
+property of a certain group associated with the LCS, known as the solution group.
+In this chapter and the next our purpose is to shed light on systems of linear equations
+modulo d where d >2. This case was considered to varying extents in Refs. [23, 46, 28],
+but is generally less well-understood.
+6.2 Group theory preliminaries
+In this section we review elements of group theory. For more details the reader can refer
+to any standard textbook, such as Ref. [47].
+A group is a set G closed under a binary operation, which contains an identity element
+e and an inverse g−1 for each element g ∈ G. The binary operation is called group
+multiplication. For h,g∈G the product is denoted gh. One way to specify a group is by
+a multiplication table. A more concise way to deﬁne a group is through a presentation,
+which is a list of relations that deﬁne the group. For example, we can deﬁne a group with
+two generators s,t which commute st = ts and square to the identity s2 = t2 = e. This
+completely speciﬁes the group as{e,s,t,st }. A ﬁnitely presented group is a group deﬁned
+by a ﬁnite number of relations. Such a group may be inﬁnite.
+More formally, let S ={s,t,u,... } be a set of symbols, and deﬁne a set of inverses of
+these symbolsS′ ={s−1,t−1,u−1,... }. A word in S∪S′ is any string of symbols and their
+inverses. An example of such a word is
+sstuu−1t−1st. (6.3)
+Two words are equivalent if one of them can be reduced to the other by removing collisions
+of the form s−1s or ss−1. For example, the above word is equivalent to ssst = s3t. The
+free groupF(S) generated by S consists of all words in the alphabet S∪S′, up to this
+equivalence. Let G be a group. The normal closure of a subset R⊆ G is the subgroup
+N(R) generated by the set {grg−1 :g∈G,r∈R}. Let R ={r1,...,r k} be a set of words
+inF(S). The ﬁnitely presented group with generators S and relations{r1 =e,...,r k =e}
+is the quotientF(S)/N(R). Intuitively this group consists of all words in F(S) where we
+identifyri with the identity element.
+A representation of a group G is a mapping φ fromG to invertible matrices over some
+vector space, which preserves the group operation, i.e.φ(gh) =φ(g)φ(h). A representation
+is irreducible if it cannot be simultaneously brought into a block diagonal form by a change
+of basis.
+66
+x7 x8 x9
+x4 x5 x6
+x1 x2 x3 x8
+x1
+x9 x6
+x4
+x7
+x10
+x3x2
+x5
+Figure 6.1: Linear constraint systems for the magic square (left) and pentagram (right) [19].
+Each variable can take values modulo d. The linear constraints are that the values of the
+variables along a solid (dashed) line add to zero (one) modulo d. Note that whether the
+games are “magic” depends upon the constraints, e.g., if all lines are solid then both games
+are classically satisﬁable.
+6.3 Linear constraint systems and solution groups
+A linear constraint system (LCS) over Zd is a pair ( M,b ), where M ∈ Mm×n(Zd) and
+b∈ Zm
+d . A classical solution is a vector a∈ Zn
+d such thatMa =b modulo d. Figure 6.1 (a)
+is a diagrammatic depiction of a LCS that is classically unsatisﬁable for alld≥ 2, since the
+sum of the variables along the rows is 0, while the sum of the variables along the columns
+is 1, which is a contradiction for classical variables.
+A quantum solution{A1,...,A n} is a collection of normal operators 2, acting on some
+Hilbert space, satisfying:
+1. Ad
+i =I for all i∈{ 1,...,n };
+2. [Aj,Ak] = 0 whenever there exists a row i such that Mij⁄= 0 and Mik⁄= 0; and
+3. ∏
+jA
+Mij
+j =ωbi for all i∈{ 1,...,m }.
+2An operator A is normal if AA† =A†A.
+67
+By condition (1), each operator Ai is unitary and the eigenvalues are dth roots of unity.
+By condition (2), whenever xj and xk appear in one of the constraints, their operator
+counterpartsAj andAk commute. In particular, all operators corresponding to a constraint
+pairwise commute, and therefore can be simultaneously measured. By condition (3), the
+expectation values of the operators satisfy the speciﬁed constraints. Here and below, we
+set ω≡ exp 2πi/d, where d is to be understood from context. Quantum solutions for the
+magic square and pentagram are shown in Figure 6.2.
+To every linear constraint system one can associate a solution group, which is a ﬁnitely
+presented group with relations that encode the deﬁning properties of a quantum solution.
+Namely,
+Deﬁnition 15. For a LCS ( M,b ), the solution group G(M,b ) is the ﬁnitely presented
+group generated by the symbols {J,g 1,...,g n} and the relations
+1. gd
+i =e, Jd =e,
+2. Jgi =giJ,
+3. gjgk =gkgj whenever there exists a row i such that Mij⁄= 0 and Mik⁄= 0,
+4. ∏
+jg
+Mij
+j =Jbi for all i∈{ 1,...,m }.
+Proposition 16. Let (M,b ) be a LCS. Suppose that a quantum solution exists in dimension
+D∈ N∪{∞}. ThenG(M,b ) admits aD-dimensional representationφ in whichφ(J) =ωI.
+Proof. Given a quantum solution {A1,...,A n} in dimension D, it is straight-forward
+to check that the homomorphic extension of the map φ(gi) = Ai, φ(J) = ωI, is a D-
+dimensional representation ofG(M,b ).
+6.4 Non-local games constructed from linear constraint
+systems
+One of the most useful applications of LCSs is the fact that they are related to perfect
+quantum strategies in certain non-local games, i.e. strategies which win with certainty. For
+a LCS given byMx =b, we deﬁne a bipartite non-local gameL(M,b ) as follows. The game
+involves two co-operating players, Alice and Bob, who receive and reply to questions from
+68
+IX XI XX
+ZI IZ ZZ
+ZX XZ YY YII
+XXX
+IYI IXI
+XYY
+XII
+IIY
+YXYYYX
+IIX
+Figure 6.2: Quantum solutions for the magic square (left) and pentagram (right) for d =
+2 [19]. Each vertex is a unitary operator whose eigenvalues are dth roots of unity. The
+operators along a solid (dashed) line multiply to I (−I).
+a referee. The players are allowed to agree on a strategy beforehand but are not allowed to
+communicate once the game starts. Alice receives an index of a row of M (corresponding
+to a constraint), and Bob receives an index of one of the variables in Alice’s constraint.
+Alice is required to assign a value to each variable in the constraint, and Bob is required
+to assign a value to the single variable he receives. The players win if Alice’s assignment
+satisﬁes the constraint and Bob’s assignment agrees with Alice’s.
+It is not hard to show that players using classical means cannot win with certainty unless
+Mx =b has a classical solution. If the players are allowed to use a quantum strategy, they
+can in some cases win the game L(M,b ) with certainty. Namely, the main result of [23] is
+the following
+Theorem 17 ([23]). Let d be a prime number, and Mx = b be a LCS modulo d. The
+following statements are equivalent
+1. Mx =b has a quantum solution (possibly inﬁnite-dimensional),
+2. The non-local gameL(M,b ) has a perfect quantum strategy (possibly of the commuting-
+operator type),
+3. The solution group G(M,b ) has the property that J⁄=e.
+69
+Note that in (2) the quantum strategy may be of the commuting-operator type. Such
+a strategy is deﬁned by a quantum state in some Hilbert space |ψ⟩∈H and observables
+{A(𝓁)
+i },{Bi} respectively for Alice and Bob. Here 𝓁 is an index for the constraint, and i is
+an index for the variable. Upon receiving the constraint 𝓁 as the question, Alice measures
+the observables{A(𝓁)
+i :i∈V𝓁} and reports the outcomes, where V𝓁 is the set of indices of
+the variables in constraint 𝓁. Similarly when Bob receives j as the question he measures
+the observable Bj and reports the outcome.
+Alice’s and Bob’s observables are required to commute, i.e. [ A(𝓁)
+i ,Bj] = 0 for all i,𝓁,j ,
+but the Hilbert space H is not required to have a tensor product structure. Such correla-
+tions are natural in algebraic quantum ﬁeld theory, where local observables of space-like
+separated regions are required to commute but the quantum state is global (in the sense
+that the Hilbert space H does not factorize as HA⊗HB).
+Statement (3) asks us to determine whether the deﬁning relations of the solution group
+deﬁnition 15 imply that J = e. Checking this property is diﬃcult in general (it is an
+instance of the word problem, which is undecidable), although for small enough instances
+a computer software, such as GAP, can compute it fairly quickly.
+6.5 Generalized Pauli observables
+Ford = 2, the canonical examples of a satisﬁability gap rely on the commutation relations
+of qubit Pauli observables. Pauli observables can be generalized to higher dimensions in a
+number of diﬀerent ways. The Weyl-Heisenberg group is arguably the most natural gener-
+alization, since it preserves the commutativity structure and error-correction properties of
+the qubit Pauli group [27]. Elements of this group are commonly referred to as generalized
+Pauli operators, and are natural candidates for constructing quantum solutions for LCS
+over Zd for d> 2.
+The single-qubit Pauli operators can be generalized to arbitrary dimensions D3 via the
+generalized shift and boost operators
+X =
+∑
+j∈ZD
+|j + 1⟩⟨j|
+Z =
+∑
+j∈ZD
+ωj|j⟩⟨j|. (6.4)
+3We useD to refer to the dimension since the more usual d is reserved for the modulus of the LCS.
+70
+The generalized shift and boost operators satisfy the commutation relation
+ZpXq =ω−pqXqZp. (6.5)
+A generalized Pauli operator for a single qu Dit is any operator A ∝ ZpXq for some
+p,q ∈ ZD. For n quDits, a generalized Pauli operator is deﬁned as a tensor product
+of single quDit generalized Paulis. From eq. (6.5), any two generalized Pauli operators
+commute up to a Dth root of unity.
+71
+Chapter 7
+No-go theorems for a satisﬁability
+gap in linear constraint systems
+7.1 Introduction
+In this chapter we prove a few results for linear constraint system modulo d> 2. First, we
+give a concise proof that the existence of a quantum solution which uses generalized Pauli
+observables in some odd dimension implies the existence of a classical solution. This fact
+follows from the non-negative discrete Wigner function for Hilbert spaces of odd dimension
+[48, 13, 49], but, interestingly, does not require the full Wigner function, only its deﬁnition
+at a single point in phase-space. While a discrete Wigner function can be deﬁned in even
+dimensions based on generalized Pauli observables [50], it is easy to show that a satisﬁability
+gap can be demonstrated using generalized Pauli observables in every even dimension (see
+Table 7.1).
+For a LCS over Zd given by the equation Mx =b mod d, checking whether a classical
+solution exists is easy, for example by Gaussian elimination if d is prime, or other eﬃcient
+methods if d is not prime [51, 52]. On the other hand, checking whether a quantum
+solution exists is a diﬃcult task. One characterization is given in [23] in terms of the so-
+called solution group. The solution group associated with Mx = b is a ﬁnitely presented
+group which encodes the algebraic relations satisﬁed by every quantum solution toMx =b.
+It is generated by symbols{gi}, which can be thought of as a non-commutative relaxation
+of the variables{xi}, in addition to a special generator J. The characterization in [23] is
+based on properties of the element J. Namely, for a LCS over Zd withd prime, a quantum
+solution exists if and only if J is not equivalent to the identity element in the group.
+72
+Checking whether an element in a ﬁnitely presented group is equivalent to the identity is
+an instance of the word problem, which is undecidable in general. Nevertheless, for small
+enough instances or in the case of highly structured groups one can use computer software,
+such as GAP [53], to ﬁnd a so-called conﬂuent rewriting system, thus solving the word
+problem for the group.
+In this chapter, we note a simple extension of the characterization in [23] which covers
+arbitrary d. Speciﬁcally, a quantum solution exists for a LCS over Zd if and only if J has
+order d. When d is prime, this characterization reduces to the one in [23].
+Furthermore, we note a property of some LCSs which we call phase-commutation.
+Roughly speaking, phase-commutation is an abstraction of matrix anti-commutation re-
+lations of the form AB = −BA. A LCS Mx = b exhibits phase-commutation if its
+non-commutative relaxation (as deﬁned by the solution group) contains two variables, g1
+and g2, with commutation relation
+g1g2 =Jcg2g1, c ⁄= 0. (7.1)
+We show that, if d is odd, any relation of the form in eq. (7.1), or of the more general
+form in eq. (7.21), implies that quantum solutions do not exist in any (ﬁnite- or countably
+inﬁnite-dimensional) Hilbert space. As a consequence, this implies that all natural gener-
+alizations of the Peres-Mermin magic square and pentagram to odd prime d do not exhibit
+a satisﬁability gap.
+This is in contrast to the case of evend, where the Peres-Mermin magic square and pen-
+tagram exhibit satisﬁability gaps that rely on using Pauli operators to represent eq. (7.1).
+In fact, a much stronger statement was proven for d = 2 in Ref. [25], namely that any
+group generated by involutions can be embedded (in a strong sense) in the solution group
+of some binary LCS which admits a quantum solution. A signiﬁcant consequence of this
+embedding for d = 2 is the separation, proven in the latter work, between commuting and
+tensor-product quantum nonlocal strategies. Our result shows that a similar statement
+cannot hold for odd d, as the group deﬁned by the phase-commutation relation in eq. (7.1)
+cannot be embedded in a LCS that has a quantum solution.
+The idea that phase-commutation can rule out a satisﬁability gap appears in (the newer
+version of) Ref. [46] for particular instances of the magic square and pentagram LCSs, and
+a similar idea appears more recently in [28], as part of a homotopical treatment of quantum
+contextuality. In comparison, our exposition is more general (it applies to all LCSs, and
+we use it to cover all natural generalizations of the square and pentagram for odd d),
+and perhaps more accessible to the non-expert reader (it does not require familiarity with
+topological ideas like cell-complexes and group pictures).
+73
+7.2 A no-go theorem for a satisﬁability gap using gen-
+eralized Pauli observables
+Theorem 18. LetD be odd. Then the LCS (M,b ) has a quantum solution using n-quDit
+generalized Pauli operators if and only if it is classically satisﬁable.
+Proof. The ﬁrst direction is easy: suppose that Mx = b has a classical solution x→ a≡
+(a1,...,a n). Then Aj = ωajI deﬁnes a quantum solution in which every operator is a
+Pauli operator. Conversely, let us assume that the LCS admits a quantum solution {Aj}
+consisting of generalized n-quDit Pauli operators. We will construct a classical solution
+by consistently assigning a root of unity ωv(σ) to each generalized n-quDit Pauli operator
+σ. The map v will be deﬁned in terms of the parity operator Π D≡∑D−1
+j=0|−j⟩⟨j|. Namely,
+we set
+ωv(σ) = Tr
+(
+Π⊗n
+D σ
+)
+. (7.2)
+For a single-quDit Pauli σ =ωkZpXq, eq. (7.2) gives v(σ) =k + 2−1pq, where the inverse
+is modulo D. It can be readily veriﬁed that the following identities hold for any n-quDit
+generalized Paulis σ,τ
+1. v(ωjI) =j,
+2. v(σ⊗τ) =v(σ) +v(τ) mod D ,
+3. v(σj) =jv(σ) mod D,
+To prove that the map Aj→v(Aj) gives a classical solution to the LCS in question, it is
+enough to show that, if σ andτ are commuting n-quDit generalized Pauli operators, then
+v(στ ) =v(σ) +v(τ). Indeed if that were true then using identities 1 & 3 we get, for every
+rowi of M,
+n∑
+j=1
+Mi,jv
+(
+Aj
+)
+=
+n∑
+j=1
+v
+(
+A
+Mi,j
+j
+)
+=v
+( n∏
+j=1
+A
+Mi,j
+j
+)
+=v
+(
+ωbiI
+)
+=bi. (7.3)
+Let σ ∝ Z[⃗ p]X[⃗ q] and τ ∝ Z[⃗ r]X[⃗ s] be tensor products of generalized Pauli operates.
+Here we are denoting A[⃗ a] =⨂n
+k=1Aak for an n-element vector⃗ a= (a1,...,a n), and, for
+simplicity, ignoring the phase factors in the deﬁnition of generalized Paulis, which does not
+aﬀect the analysis. Note that
+v(ZpXq) +v(ZrXs) = 2−1(pq +rs)∀p,q,r,s. (7.4)
+74
+On the other hand, by eq. (6.5),
+v(ZpXqZrXs) =v(ω−qrZp+rXq+s) =−qr + 2−1(p +r)(q +s). (7.5)
+Comparing Eq. (7.4) and (7.5) and using identity 2,
+v(Z[⃗ p]X[⃗ q]Z[⃗ r]X[⃗ s]) =v(Z[⃗ p]X[⃗ q]) +v(Z[⃗ r]X[⃗ s])⇐⇒⃗ p·⃗ s−⃗ q·⃗ r= 0 (mod d). (7.6)
+The condition ⃗ p·⃗ s−⃗ q·⃗ r= 0 is precisely the requirement that Z[⃗ p]X[⃗ q] and Z[⃗ r]X[⃗ s]
+commute. Indeed, by eq. (6.5)
+Z[⃗ p]X[⃗ q]Z[⃗ r]X[⃗ s] =ω⃗ q·⃗ rZ[⃗ p]Z[⃗ r]X[⃗ s]X[⃗ q] =ω⃗ q·⃗ r−⃗ p·⃗ sZ[⃗ r]X[⃗ s]Z[⃗ p]X[⃗ q]. (7.7)
+Therefore v(στ ) =v(σ) +v(τ) for any commuting σ and τ, ﬁnishing the proof.
+The above proof fails for even D. The proof hinges on the ability to consistently assign
+a root of unity to every generalized Pauli operator. For σ =ωkZpXq, eq. (7.2) reads
+ωv(σ) = Tr (Π)Dσ =
+∑
+j
+⟨j|σ|−j⟩ =
+∑
+j:2j=q
+ωpj+k. (7.8)
+WhenD is even, the sum evaluates to 0 whenever q is odd, making it impossible to deﬁne
+the map in this way. One may wonder whether the map v can be deﬁned in a diﬀerent
+way for even D. This is also impossible, as shown by the family of quantum solutions
+in Table 7.1. Note that the parity operator Π D in the proof of Theorem 18 is one of the
+phase point operators for the discrete Wigner function in odd dimensions [48]. While it
+is possible to deﬁne a discrete Wigner function in even dimensions based on generalized
+Pauli operators [50], important properties, such as non-negativity of stabilizer states and
+Cliﬀord-covariance, are lost in that case [54].
+7.3 A no-go theorem for a satisﬁability gap with Pauli-
+like commutation relations
+Theorem 18 asserts that a quantum/classical satisﬁability gap cannot be illustrated using
+generalized Pauli operators in odd dimension. We now show that the canonical commuta-
+tion relations of these operators cannot be embedded in the solution group of a LCS that
+has a quantum solution. Some of this discussion is inspired by (the corrected version of)
+Ref. [46], but it applies more generally than what is considered in that work.
+A key characterization of quantum satisﬁability when d is prime is the following:
+75
+Zt⊗Xt Xt⊗Zt XtZt⊗ZtXt
+Zt⊗I I⊗Zt Zt⊗Zt
+I⊗Xt Xt⊗I Xt⊗Xt
+Zt+1⊗Xt+1 Xt⊗Zt XtZt−1⊗ZtXt−1
+Zt−1⊗I I⊗Zt Zt+1⊗Zt
+I⊗Xt−1 Xt⊗I Xt⊗Xt+1
+Table 7.1: Quantum solutions to a generalized magic square LCS modulo D = 2t, for
+odd (even) t on the left (right). In both cases, the generalized two-qu Dit Pauli operators
+along every row and column mutually commute, their product along the third column is
+ωtI =−I, and their product along the rows and remaining columns isI. This shows that a
+satisﬁability gap exists using n-quDit generalized Pauli operators for every even dimension
+D.
+Theorem 19. [23]. Let (M,b ) be a LCS over Zd whered is prime. Then (M,b ) admits a
+quantum solution if and only if the solution group G(M,b ) has the property that J⁄=e.
+The proof of Theorem 19 relies on the fact that, when J ⁄= e, the group algebra of
+G(M,b ) contains a subspace on which it is easy to construct a quantum solution. A similar
+proof works for non-prime d as well, provided we make an adjustment to the statement of
+the theorem.
+Theorem 20. Let (M,b ) be a LCS over Zd with d >1. Then (M,b ) admits a quantum
+solution if and only if the order of J is d.
+Proof (A minor modiﬁcation of the proof in [23]). Suppose (M,b ) has a quantum solution
+{Ai}. By Proposition 16, there is a representation φ ofG(M,b ) such that φ(J) =ωI. For
+c⁄= 0 mod d,φ(Jc) =ωcI⁄=I, and thereforeJc⁄=e. Thus the order of J isd. Conversely,
+suppose thatG(M,b ) is such that the order of J is d. Deﬁne the complex vector space H
+by
+H =
+{∑
+g∈G
+αg|g⟩ :‖α‖2 <∞
+}
+. (7.9)
+Deﬁne the operators{Lg :g∈G} viaLg|h⟩ =|gh⟩. The proof proceeds in two steps. First
+we list certain properties of the Lg. Second, we deﬁne a certain subspace of H on which
+the restriction of Lg1,...,L gn is a quantum solution. The relevant properties of the Lg are
+the following
+1. The eigenvalues of Lgi are dth roots of unity:
+Ld
+gi =Lgd
+i
+=Le =I. (7.10)
+76
+2. Let i,j and k be such that Mij⁄= 0 and Mik⁄= 0, then, for all g∈G (M,b ),
+LgjLgk|g⟩ =|gjgkg⟩ =|gkgjg⟩ =LgkLgj|g⟩, (7.11)
+and therefore [Lgj,Lgk] = 0.
+3. For any i∈{ 1,...,m } and g∈G (M,b ),
+LMi1
+g1 ...L Min
+gn |g⟩ =|gMi1
+1 ...g Min
+n g⟩
+=|Jbig⟩
+=Lbi
+J|g⟩. (7.12)
+4. Deﬁne a ﬁducial vector |ψ⟩ =d−1/2∑
+c∈Zd
+ωc|Jc⟩. Then
+L−bi
+J |ψ⟩ =
+∑
+c∈Zd
+ωc|Jc−bi⟩ =ωbi|ψ⟩. (7.13)
+To construct the quantum solution, ﬁrst we deﬁne the subspace H′⊂H
+H′≡
+{
+E|ψ⟩ :E∈ A
+}
+, (7.14)
+where A is the algebra generated by Lg1,...,L gn (i.e. all linear combinations of products
+of the Lgi). Note that the powers of J are all distinct by assumption: if Ja = Jb then
+Ja−b = e, and hence a−b = 0 mod d. In particular this implies that |ψ⟩⁄ = 0, and, as
+|ψ⟩∈H ′,H′⁄={0}.
+Deﬁne the quantum solution Ai as the restriction of ( Lgi)−1 toH′, i.e. Ai = L−1
+gi|H′.
+Let us verify that this satisﬁes the deﬁnition of a quantum solution:
+1. Ad
+i =I follows from eq. (7.10),
+2. if Mij⁄= 0 and Mik⁄= 0 then [Aj,Ak] = 0 follows from eq. (7.11),
+3. First use eq. (7.13) and the fact that Lbi
+J commutes with every element of E∈ A to
+deduce that L−bi
+J E|ψ⟩ =EL−bi
+J |ψ⟩ =ωbiE|ψ⟩. From eq. (7.12) we then have
+∏
+j
+A
+Mij
+j =
+∏
+j
+L−Mij
+gj |H′ =L−bi
+J |H′ =ωbiI. (7.15)
+77
+Note that Theorem 19 is a special case of Theorem 20 since, for prime d, cyclicity of
+the powers of J imply that J⁄=e if and only the order of J is d.
+Generalized Pauli operators obey commutation relations of the form AB =ωcBA, and
+are in a sense uniquely determined by these relations. More specifcally, consider the ﬁnite
+groupPd with generators{X,Z,η} and relations
+XZ =ηZX, Xd =Zd =ηd =e, η X =Xη, η Z =Zη. (7.16)
+By Schur’s lemma and the fact that ηd =e, every irreducible representation of Pd assigns
+a dth root of unity ωjI to η. Furthermore, it was shown by Weyl that up to unitary
+equivalence every irreducible representation ofPd in whichj⁄= 0 mapsX andZ to (phase-
+multiples of) the clock and shift operators in some dimension d′ that divides d [55].
+We consider a particular notion of an embedding of eq. (7.16) into the solution group
+of a LCS. Namely, suppose that the solution group contains a relation of the form
+gahb =Jchbga (7.17)
+for a pair of generators g and h and some nonzero a,b,c ∈ Zd. We refer to such a relation
+as a phase-commutation relation in the solution group. A phase-commutation relation
+implies that the LCS is classically unsatisﬁable; no integersx andy can satisfy the equation
+ax +by =c +by +ax mod d for c⁄= 0 mod d.
+This notion of an embedding can be motivated by considering the situation for d = 2.
+Given a group K, a collection of elements k1,...,k m ∈ K and a non-identity central
+element η, such that k2
+i = η2 = e, it was shown in [25] that there exists a LCS Mx = b
+and an embedding ψ :K→G (M,b ), such thatψ(ki) =gi andψ(η) =J. As ψ is injective,
+this implies that J⁄= e, and so every such K embeds in the solution group of some LCS
+which has a (possibly inﬁnite-dimensional) quantum solution.
+In contrast, we show next that, for odd d, a phase-commutation relation implies that
+quantum solutions to the LCS in question do not exist in any dimension, which rules out
+a satisﬁability gap for any LCS in which eq. (7.16) embeds in the solution group.
+Theorem 21. Letd be odd. Suppose that a LCS over Zd has a phase-commutation relation.
+Then it has no quantum solutions.
+78
+Theorem 21 can be proven diagrammatically using symmetries of the so-called group-
+picture associated with solution groups [25, 46]. We avoid group-pictures for the sake of
+simplicity, and present a more direct proof instead.
+Proof. Let S≡{ J,g 1,...,g n} denote the generators of the solution group G, and S′≡
+{J−1,g−1
+1 ,...,g −1
+n }. Let R ⊂ F(S) be the set of relations deﬁning G, so that G =
+F(S)/N(R). Let g∈S and h∈S be a phase-commuting pair, so that, in G,
+gahb =Jchbga, c ⁄= 0. (7.18)
+Letw be the wordJ−cgahbg−ah−b. Since w =e inG, it holds that, inF(S),w is equivalent
+to an element of the normal closure N(R). This implies that there exist u1,...,u 𝓁∈F (S)
+and q1,...,q 𝓁∈R, such that the word
+W≡ (u1q1u−1
+1 )(u2q2u−1
+2 )... (u𝓁q𝓁u−1
+𝓁 ), (7.19)
+is equivalent tow inF(S), that is,W can be reduced tow using only generator contractions
+of the form gig−1
+i =e. Let ˜W be the “reﬂected” version of W
+˜W≡ (˜u−1
+𝓁 ˜q𝓁˜u𝓁)... (˜u−1
+2 ˜q2˜u2)(˜u−1
+1 ˜q1˜u1), (7.20)
+where ˜x is obtained from x by reversing the order of multiplication of the letters making
+up x. For example, if x =g1g2g3 then ˜x =g3g2g1.
+Recall, from the deﬁnition of solution groups, that each of the relations in R (and
+therefore each of the qi) consists of mutually commuting letters from S∪S′. It therefore
+holds that ˜qi =qi =e inG. This implies that ˜W =e inG. Furthermore, we have ˜W = ˜w in
+G, since the same sequence of generator contractions that reduces W to w can be applied
+to reduce ˜W to ˜w, so ˜W is equivalent to ˜w inF(S), and therefore also in G.
+Thus we have ˜w = e inG, and therefore hbga = Jcgahb inG. Combining this with
+gahb =Jchbga implies thatJ 2c =e inG. Since d is odd, we have 2c⁄= 0 mod d. Therefore,
+by Theorem 20, there are no quantum solutions.
+The statement and proof of Theorem 21 can be generalized by considering relations of
+the form
+ga1
+1 ...g ak
+k =Jcgak
+k ...g a1
+1 . (7.21)
+Following the same steps in the proof of Theorem 21, we can deduce that J 2c =e, which,
+for c⁄= 0 mod d, implies that the order of J is less than d, and hence that there are no
+quantum solutions.
+79
+7.4 Examples
+7.4.1 Magic square modulo prime d> 2
+Let d> 2 be prime. Here we consider a broad class of generalizations of the magic square
+LCS. Namely, we consider any LCS, over Zd of the form in Figure 6.1 (a) with arbitrary
+coeﬃcients, i.e. any system of the form
+a1x1 +a2x2 +a3x3 =b1,
+a4x4 +a5x5 +a6x6 =b2,
+a7x7 +a8x8 +a9x9 =b3,
+a′
+1x1 +a′
+4x4 +a′
+7x7 =b4,
+a′
+2x2 +a′
+5x5 +a′
+8x8 =b5,
+a′
+3x3 +a′
+6x6 +a′
+9x9 =b6, (7.22)
+for some b∈ Z6
+d, and some set of coeﬃcients ai,a′
+i∈ Zd−{ 0}.
+We can simplify by making some reductions. First, we assume that the coeﬃcients in
+the ﬁrst three constraints are all equal to one, if necessary by relabelingxi→aixi. Second,
+as d is prime, every nonzero element of Zd has a multiplicative inverse, so we can divide
+the last three constraints respectively by the coeﬃcients of x1,x2, andx3. These two steps
+yield a LCS of the form
+x1 +x2 +x3 =b1
+x4 +x5 +x6 =b2
+x7 +x8 +x9 =b3
+x1 +γ4x4 +γ7x7 =b4
+x2 +γ5x5 +γ8x8 =b5
+x3 +γ6x6 +γ9x9 =b6, (7.23)
+for someγi∈ Zd−{0}, and (generally diﬀerent)b∈ Z6
+d. Note that these operations preserve
+classical and quantum satisﬁability (whereas more general row operations do not). Denote
+80
+the above reduced LCS by Mx =b, where
+M =
+
+
+1 1 1 0 0 0 0 0 0
+0 0 0 1 1 1 0 0 0
+0 0 0 0 0 0 1 1 1
+1 0 0 γ4 0 0 γ7 0 0
+0 1 0 0 γ5 0 0 γ8 0
+0 0 1 0 0 γ6 0 0 γ9
+
+
+. (7.24)
+It is straightforward to check that
+rank(M) =
+{
+5 if γ4 =γ5 =γ6 and γ7 =γ8 =γ9,
+6 otherwise , (7.25)
+where the rank is computed modulo d (which is well-deﬁned as d is prime). Thus the
+system Mx = b is classically unsatisﬁable only if γ4 = γ5 = γ6 and γ7 = γ8 = γ9.
+Essentially this means that we only need to check ( d− 1)2 cases, corresponding to the
+values of the γi∈ Zd−{ 0} that could make the LCS classically unsatisﬁable. As we will
+see next, in each of these cases a phase-commutation relation prohibits the existence of a
+satisﬁability gap.
+Theorem 22. Letd> 2 be a prime integer. A LCS of the form in eq. (7.22) over Zd has
+a quantum solution if and only if it is classically satisﬁable.
+Proof. If a classical solution exists then a quantum solution exists. Conversely, assume
+that a quantum solution exists, and denote the associated reduced LCS in eq. (7.23) by
+Mx = b. Assume that γ4 = γ5 = γ6≡ γ and γ7 = γ8 = γ9≡ δ, otherwise there is a
+classical solution and we are done. In the solution group G(M,b ), we have
+g1g2g3 =Jb1 g4g5g6 =Jb2 g7g8g9 =Jb3
+g1gγ
+4gδ
+7 =Jb4 g2gγ
+5gδ
+8 =Jb5 g3gγ
+6gδ
+9 =Jb6. (7.26)
+We note the group identity
+g1gγ
+4g2gγ
+5 =Jb4+b5g−δ
+7 g−δ
+8
+=J−δb3+b4+b5gδ
+9
+=J−δb3+b4+b5+b6g−1
+3 g−γ
+6
+=Jb1−γb2−δb3+b4+b5+b6g1g2gγ
+4gγ
+5. (7.27)
+81
+Multiplying both sides on the left by g−1
+1 and on the right by g−γ
+5 reveals the phase-
+commutation
+g2gγ
+4 =J−b1−γb2−δb3+b4+b5+b6gγ
+4g2. (7.28)
+Since d is odd, by Theorem 21 and eq. (7.28), a necessary condition for the existence of a
+quantum solution is that−b1−γb2−δb3+b4+b5+b6 = 0 mod d. This implies that the LCS
+is classically satisﬁable: set xb = (−γb2−δb3 +b4,b 5,b 1 +γb2 +δb3−b4−b5,b 2, 0, 0,b 3, 0, 0),
+thenMxb = (b1,b 2,b 3,b 4,b 5,b 1 +γb2 +δb3−b4−b5) =b. This shows that the original LCS
+in eq. (7.22) has a classical solution.
+7.4.2 Magic pentagram modulo prime d> 2
+Similar to the magic square LCS, we consider any LCS, over Zd of the pentagram form in
+Figure 6.1 (b) with arbitrary coeﬃcients, i.e. any system of the form
+a1x1 +a2x2 +a3x3 +a4x4 =b1
+a′
+1x1 +a5x5 +a6x6 +a7x7 =b2
+a′
+2x2 +a′
+5x5 +a8x8 +a9x9 =b3
+a′
+3x3 +a′
+6x6 +a′
+8x8 +a10x10 =b4
+a′
+4x4 +a′
+7x7 +a′
+9x9 +a′
+10x10 =b5. (7.29)
+We can perform similar reductions to the magic square case. First, we set all coeﬃcients
+equal to 1 in the ﬁrst constraint by relabeling xi→aixi if necessary. Next, we divide the
+remaining four constraints by the coeﬃcients of the ﬁrst variable from the left. Finally,
+for i = 5,..., 10, we relabel xi→aixi if necessary to ensure that the coeﬃcient of each xi
+equals 1 in the ﬁrst constraint it appears in. This yields the LCS
+x1 +x2 +x3 +x4 =b1
+x1 +x5 +x6 +x7 =b2
+x2 +γ5x5 +x8 +x9 =b3
+x3 +γ6x6 +γ8x8 +x10 =b4
+x4 +γ7x7 +γ9x9 +γ10x10 =b5, (7.30)
+82
+for someγi∈ Zd−{0}, and (generally diﬀerent)b∈ Z5
+d. As before, the reduction preserves
+quantum and classical satisﬁability. Denote the reduced LCS above by Mx =b, where
+M =
+
+
+1 1 1 1 0 0 0 0 0 0
+1 0 0 0 1 1 1 0 0 0
+0 1 0 0 γ5 0 0 1 1 0
+0 0 1 0 0 γ6 0 γ8 0 1
+0 0 0 1 0 0 γ7 0 γ9 γ10
+
+
+. (7.31)
+It is straightforward to verify that
+rank(M) =
+{
+4 if γi =−1 for all i,
+5 otherwise , (7.32)
+where the rank is computed modulo d. Thus the system Mx =b is classically unsatisﬁable
+only if γi =−1 for all i. Again, we ﬁnd that phase-commutation prohibits the existence
+of a satisﬁability gap in this case.
+Theorem 23. Letd> 2 be a prime integer. A LCS of the form in eq. (7.29) over Zd has
+a quantum solution if and only if it is classically satisﬁable.
+Proof. If a classical solution exists then a quantum solution exists. Conversely, assume
+that a quantum solution exists, and denote the associated reduced LCS in eq. (7.30) by
+Mx =b. Assume that γ = (−1,−1,−1,−1,−1,−1), otherwise there is a classical solution
+and we are done. In the solution group G(M,b ), we have
+g1g2g3g4 =Jb1 g1g5g6g7 =Jb2 g2g−1
+5 g8g9 =Jb3
+g3g−1
+6 g−1
+8 g10 =Jb4 g4g−1
+7 g−1
+9 g−1
+10 =Jb5. (7.33)
+We can deduce a phase-commutation relation by multiplying the last four constraints:
+Jb2+b3+b4+b5 = (g1g5g6g7)(g2g−1
+5 g8g9)(g3g−1
+6 g−1
+8 g10)(g4g−1
+7 g−1
+9 g−1
+10 )
+= (g1g6g7)(g2g9)(g3g−1
+6 )(g4g−1
+7 g−1
+9 )
+= (g1g7)(g2g9)(g3)(g4g−1
+7 g−1
+9 )
+= (g1g7)(g2g9)(g−1
+7 g−1
+9 )(g3g4)
+= (g1g7)g2g−1
+7 (g3g4)
+=g7(g1g2g4)g−1
+7 g3 (7.34)
+83
+where in the third and fourth lines we use the facts that g6 commutes with g2g9, and
+g3 commutes with g7g9, respectively. Substituting g1g2g4 = Jb1g−1
+3 reveals the phase-
+commutation relation
+g7g−1
+3 =J−b1+b2+b3+b4+b5g−1
+3 g7. (7.35)
+Since d is odd, by Theorem 21 and eq. (7.35), a necessary condition for the existence
+of a quantum solution is that −b1 +b2 +b3 +b4 +b5 = 0 mod d. This implies that
+the LCS is classically satisﬁable: set xb = (b2,b 3,b 4,b 1−b2−b3−b4, 0, 0, 0, 0, 0, 0), then
+Mxb = (b1,b 2,b 3,b 4,b 1−b2−b3−b4) = b. This shows that the original LCS in eq. (7.29)
+has a classical solution.
+7.4.3 Magic square and pentagram modulo odd, composite d
+When d is a composite integer, Zd is not a ﬁeld, and one cannot deﬁne a vector space
+over Zd. This makes it diﬃcult to generalize the proofs of the previous two subsections to
+this setting. In particular, zero-divisors can appear as coeﬃcients in the LCS, making the
+reductions used in eqs. (7.23) and (7.30) inapplicable. Linear algebraic concepts, such as
+matrix rank and column space, are also invalid in this case, so we cannot use eqs. (7.25)
+and (7.32).
+Nevertheless, if the coeﬃcients in the LCS are restricted to {±1}, the arguments used
+in the primed case go through almost unchanged. Namely, we can use the same reductions
+to obtain the LCSs eqs. (7.23) and (7.30), and these LCSs satisfy the following.
+Lemma 24. If the LCS in eq. (7.23) is classically unsatisﬁable modulo an odd integer and
+γi∈{± 1}, then γ4 =γ5 =γ6 and γ7 =γ8 =γ9.
+Proof of Lemma 24. Due to symmetry under the exchange ( x4,x 5,x 6)↔ (x7,x 8,x 9), it
+is enough to show that if ( γ4 = γ5 = γ6) does not hold then a classical solution exists.
+Suppose that γ4 =−γ5. Then a classical solution is given by
+x1→ 1
+2(b1−γ4b2−γ7b3 +b4−b5−b6) x2→ 1
+2(b1 +γ4b2 +γ7b3−b4 +b5−b6)
+x4→ 1
+2γ4(−b1 +γ4b2−γ7b3 +b4 +b5 +b6) x5→ 1
+2γ4(b1 +γ4b2 +γ7b3−b4−b5−b6)
+x3→b6, x 7→b3, x 6,x 8,x 9→ 0. (7.36)
+84
+Suppose now that γ4 =γ5 and γ5 =−γ6. Then a classical solution is given by
+x1→ 1
+2 (b1 +γ4b2−γ7b3 +b4−b5−b6) x3→ 1
+2 (b1 +γ4b2 +γ7b3−b4−b5 +b6)
+x4→ 1
+2γ4 (−b1 +γ4b2−γ7b3 +b4 +b5 +b6) x6→ 1
+2γ4 (b1 +γ4b2 +γ7b3−b4−b5 +b6)
+x2→b5, x 7→b3, x 5,x 8,x 9→ 0. (7.37)
+These solutions are valid modulo d as long as 2 has a multiplicative inverse modulo d,
+which is the case when d is odd.
+We can also prove a similar statement for the pentagram LCS:
+Lemma 25. If the LCS in eq. (7.30) is classically unsatisﬁable modulo an odd integer and
+γi∈{± 1}, then γ = (−1,−1,−1,−1,−1,−1).
+Proof of Lemma 25. The following explicit solutions
+x→
+(1
+2 (b1 +b2−b3−b4−b5), 1
+2 (b1−b2 +b3−b4−b5),b 4,b 5, 1
+2 (−b1 +b2 +b3 +b4 +b5), 0, 0, 0, 0, 0
+)
+if γ5 = 1,
+x→
+(1
+2 (b1 +b2−b3−b4−b5),b 3, 1
+2 (b1−b2−b3 +b4−b5),b 5, 0, 1
+2 (−b1 +b2 +b3 +b4 +b5), 0, 0, 0, 0
+)
+if γ6 = 1,
+x→
+(1
+2 (b1 +b2−b3−b4−b5),b 3,b 4, 1
+2 (b1−b2−b3−b4 +b5), 0, 0, 1
+2 (−b1 +b2 +b3 +b4 +b5), 0, 0, 0
+)
+if γ7 = 1,
+x→
+(
+b2, 1
+2 (b1−b2 +b3−b4−b5), 1
+2 (b1−b2−b3 +b4−b5),b 5, 0, 0, 0, 1
+2 (−b1 +b2 +b3 +b4 +b5), 0, 0
+)
+if γ8 = 1,
+x→
+(
+b2, 1
+2 (b1−b2 +b3−b4−b5),b 4, 1
+2 (b1−b2−b3−b4 +b5), 0, 0, 0, 0, 1
+2 (−b1 +b2 +b3 +b4 +b5), 0
+)
+if γ9 = 1,
+x→
+(
+b2,b 3, 1
+2 (b1−b2−b3 +b4−b5), 1
+2 (b1−b2−b3−b4 +b5), 0, 0, 0, 0, 0, 1
+2 (−b1 +b2 +b3 +b4 +b5)
+)
+if γ10 = 1,
+(7.38)
+prove the statement, provided that 2 has a multiplicative inverse modulo d, which is the
+case if d is odd.
+We can now immediately generalize Theorems 22 and 23 to the case of odd d and
+coeﬃcients in{±1}. For the square LCS we get
+Theorem 26. Letd> 1 be odd. A LCS of the form in eq. (7.22) over Zd with coeﬃcients
+in{±1} has a quantum solution if and only if it is classically satisﬁable.
+and for the pentagram LCS we get
+85
+Theorem 27. Letd> 1 be odd. A LCS of the form in eq. (7.29) over Zd with coeﬃcients
+in{±1} has a quantum solution if and only if it is classically satisﬁable.
+The proofs of Theorems 26 and 27 are identical to those of Theorems 22 and 23,
+respectively.
+86
+Chapter 8
+Concluding remarks and open
+problems
+One of the major frontiers of current scientiﬁc research is understanding the separation
+in computational power between quantum and classical computers. An essential tool in
+these investigations is the use of classical simulation algorithms as a theoretical paradigm.
+The main problem this thesis tackles, i.e. ﬁnding low-rank stabilizer decompositions of
+quantum states, is very unusual in that it is quite concise and yet has profound theoretical
+and practical implications. The second topic in this work, linear constraint systems, is
+a highly structured manifestation of certain physical phenomena that have been argued
+to be the main reason quantum computers have an advantage, namely nonlocality and
+contextuality. This thesis leaves a number of interesting open questions in both topics,
+and in this chapter we discuss some of them.
+In Chapter 3 we showed that constructing approximate stabilizer decompositions is
+signiﬁcantly facilitated by rewriting the circuit in a canonical form using Cliﬀord recom-
+pilation. An interesting open question is how much further we can compress the stabilizer
+decomposition. We have some evidence that using Cliﬀord decompositions of matrix prod-
+ucts of multi-qubit gates can lead to dramatic improvements. Furthermore, randomized
+sparsiﬁcation bears a close resemblance to well-known Monte Carlo methods in many-
+body physics. In these methods, signiﬁcant improvements are possible by employing clever
+sampling schemes, such as loop and cluster updates. Whether similar ideas can work for
+stabilizer rank simulations is an interesting and practical question.
+In Chapter 4 we found signiﬁcantly more sparse exact stabilizer decompositions of m
+copies of a magic state, |ψ⟩⊗m, and further conjectured that better decompositions exist.
+87
+A natural question is whether there exists a lower bound on χ(ψ⊗m); the stabilizer rank
+of|ψ⟩⊗m. If χ(ψ⊗m) is polynomial or even sub-exponential in m, and we could eﬃciently
+compute any desired term of the optimal stabilizer decomposition, that would lead to
+extremely unlikely complexity theoretic consequences, such as collapse of the polynomial
+hierarchy [8]. Conversely this means that, either χ(ψ⊗m) is exponential in m, or that com-
+puting the terms of the optimal decomposition is as hard as simulating quantum circuits.
+Distinguishing between the two possibilities is an interesting open question. Refs. [6, 7, 8]
+attempt to prove a lower bound on χ(T⊗m) independently of complexity theoretic conjec-
+tures, and succeed in proving partial results, for example proving that χ(T⊗m) is Ω(√m)
+[6], and that any approximate decomposition ofχ(T⊗m) that uses tensor product stabilizer
+states require exponentially many terms [8].
+The sparse decompositions derived in Chapter 4 are based on stabilizer states with a
+certain entanglement structure, but the exact role entanglement plays in this framework
+remains unclear. Entangled stabilizer states are in a sense classical, since they can be
+eﬃciently simulated using the Gottesman-Knill theorem. Yet using entangled stabilizer
+states seems to facilitate classical simulation of non-stabilizer states by allowing for more
+sparse decompositions. Finding a generalization of the results in Chapter 4 which elucidates
+this relationship between entanglement structure and the stabilizer rank is an interesting
+open problem.
+Such a generalization may be possible by considering linear binary codes, i.e. subspaces
+of the vector space Fn
+2. For a given linear code L⊂ Fn
+2 and a product basis{|x⟩ :x∈ Fn
+2},
+one can ask what the stabilizer rank of the uniform superposition∑
+x∈L|x⟩ is. The cat states
+considered in Chapter 4 correspond to the repetition code in the basis |ψ⟩,|ψ⊥⟩. Other
+linear codes have a diﬀerent entanglement structure, and allow similar tensor contractions
+as in Chapter 4 to be used. Determining the optimal stabilizer decomposition of |ψ⟩⊗m
+obtained in this way is a natural next step.
+In Chapter 5 we considered approximate stabilizer decompositions of the time evolved
+state eiHt|0⟩⊗n, and concluded that one can ﬁnd signiﬁcantly more sparse decompositions
+in comparison to more standard approaches. We stop short of claiming that this method
+is advantageous to known methods of simulating short time dynamics, since that would
+require extensive numerical evidence. This is left for a future work.
+For linear constraint systems (LCS), the existence of a quantum/classical satisﬁability
+gap in a LCS modulod is deeply related to whetherd is even or odd. Part of this dependence
+is elucidated by considering generalized Pauli operators. These operators enter the picture
+in two ways. First, as shown in Theorem 18, generalized Pauli operators in odd d cannot
+be used to demonstrate a satisﬁability gap, since every quantum solution consisting of
+88
+these operators can be reduced to a classical solution. Second, the canonical commutation
+relation AB =ωcBA, obeyed by generalized Pauli operators, is itself suﬃcient to rule out
+a satisﬁability gap when d is odd. Speciﬁcally, Theorem 21 shows that if this relation is
+embedded in the solution group of a LCS over odd d, then quantum solutions do not exist
+in any dimension.
+Both of these facts are in contrast to the case of evend; table 7.1 shows a family of LCSs
+for every evend, each of which has a phase-commutation relation, as well as a satisﬁability
+gap which can be demonstrated using generalized Pauli operators in even d. Theorem 21
+can be seen as an obstruction to generalizing the embedding theorem of [25], which holds
+for d = 2, to odd d.
+In Section 7.4 we use the relationship between phase-commutation and satisﬁability
+to prove that certain generalizations of the magic square and pentagram to odd d do not
+have a satisﬁability gap. The LCSs we consider in these examples can be seen as arising
+from the incidence matrices of (weighted) graphs. Prior work for d = 2 characterizes the
+existence of a gap in terms of planarity of such graphs [17], but this characterization does
+not carry over to the case of d> 2. The techniques based on phase-commutation, outlined
+in the examples in Chapter 7, may become useful in ﬁnding such a generalization. It is,
+however, unclear how simple such a characterization might be. Planarity of a graph can
+be checked eﬃciently, see for example [56], but phase-commutation seems to be a more
+diﬃcult property to check.
+Finally, the results in Chapter 7 raise the question of whether there exists a LCS over
+oddd with a classical/quantum satisﬁability gap. While no such cases are currently known,
+an upcoming work by Slofstra and L. Zhang [57] answers this question in the aﬃrmative;
+there exists a LCS with a classical/quantum gap modulo d for every prime d, with some
+evidence that the gap is achievable using ﬁnite-dimensional quantum solutions.
+89
+References
+[1] Daniel Gottesman. The Heisenberg representation of quantum computers. arXiv
+preprint quant-ph/9807006, 1998.
+[2] Leslie G Valiant. Quantum circuits that can be simulated classically in polynomial
+time. SIAM Journal on Computing , 31(4):1229–1254, 2002.
+[3] Barbara M Terhal and David P DiVincenzo. Classical simulation of noninteracting-
+fermion quantum circuits. Physical Review A, 65(3):032325, mar 2002.
+[4] Michael A. Nielsen and Isaac L. Chuang. Quantum information theory. In Quantum
+Computation and Quantum Information , pages 528–607. Cambridge University Press.
+[5] Scott Aaronson and Daniel Gottesman. Improved simulation of stabilizer circuits.
+Physical Review A, 70(5):052328, nov 2004.
+[6] Sergey Bravyi, Graeme Smith, and John A. Smolin. Trading classical and quantum
+computational resources. Physical Review X, 6(2), jun 2016.
+[7] Sergey Bravyi and David Gosset. Improved classical simulation of quantum circuits
+dominated by cliﬀord gates. Phys. Rev. Lett., 116:250501, Jun 2016.
+[8] Sergey Bravyi, Dan Browne, Padraic Calpin, Earl Campbell, David Gosset, and Mark
+Howard. Simulation of quantum circuits by low-rank stabilizer decompositions. Quan-
+tum, 3:181, sep 2019.
+[9] Dan Stahlke. Quantum interference as a resource for quantum speedup. Phys. Rev.
+A, 90:022302, Aug 2014.
+[10] Hakop Pashayan, Joel J Wallman, and Stephen D Bartlett. Estimating outcome
+probabilities of quantum circuits using quasiprobabilities. Physical review letters ,
+115(7):070501, 2015.
+90
+[11] Mark Howard and Earl Campbell. Application of a resource theory for magic states
+to fault-tolerant quantum computing. Physical Review Letters, 118(9):090501, 2017.
+[12] Ryan S. Bennink, Erik M. Ferragut, Travis S. Humble, Jason A. Laska, James J.
+Nutaro, Mark G. Pleszkoch, and Raphael C. Pooser. Unbiased simulation of near-
+cliﬀord quantum circuits. Physical Review A, 95(6), jun 2017.
+[13] Victor Veitch, Christopher Ferrie, David Gross, and Joseph Emerson. Negative
+quasi-probability as a resource for quantum computation. New Journal of Physics ,
+14(11):113011, 2012. DOI: 10.1088/1367-2630/14/11/113011 .
+[14] Mark Howard, Joel Wallman, Victor Veitch, and Joseph Emerson. Contextuality
+supplies the ‘magic’ for quantum computation. Nature, 510(7505):351–355, jun 2014.
+[15] Sergey Bravyi, David Gosset, and Robert K¨ onig. Quantum advantage with shallow
+circuits. Science, 362(6412):308–311, oct 2018.
+[16] Sergey Bravyi, David Gosset, Robert K¨ onig, and Marco Tomamichel. Quantum ad-
+vantage with noisy shallow circuits. Nature Physics, 16(10):1040–1045, jul 2020.
+[17] Alex Aleksandr Arkhipov. Extending and characterizing quantum magic games . PhD
+thesis, Massachusetts Institute of Technology, 2012.
+[18] Richard Cleve and Rajat Mittal. Characterization of binary constraint system games.
+In Javier Esparza, Pierre Fraigniaud, Thore Husfeldt, and Elias Koutsoupias, editors,
+Automata, Languages, and Programming , pages 320–331, Berlin, Heidelberg, 2014.
+Springer Berlin Heidelberg. DOI: 10.1007/978-3-662-43948-727.
+[19] N. David Mermin. Hidden variables and the two theorems of john bell. Reviews of
+Modern Physics, 65(3):803–815, jul 1993.
+[20] Asher Peres. Two simple proofs of the Kochen-Specker theorem. Journal of Physics
+A: Mathematical and General , 24(4):L175, 1991. DOI: 10.1088/0305-4470/24/4/003.
+[21] Gilles Brassard, Anne Broadbent, and Alain Tapp. Quantum pseudo-telepathy. Foun-
+dations of Physics , 35(11):1877–1907, 2005. DOI: 10.1007/s10701-005-7353-4.
+[22] M. Junge, M. Navascues, C. Palazuelos, D. Perez-Garcia, V. B. Scholz, and R. F.
+Werner. Connes' embedding problem and tsirelson's problem. Journal of Mathematical
+Physics, 52(1):012102, jan 2011.
+91
+[23] Richard Cleve, Li Liu, and William Slofstra. Perfect commuting-operator strategies
+for linear system games. Journal of Mathematical Physics , 58(1):012202, 2017. DOI:
+10.1063/1.4973422.
+[24] William Slofstra. The set of quantum correlations is not closed. In Forum of Mathe-
+matics, Pi, volume 7. Cambridge University Press, 2019. DOI: 10.1017/fmp.2018.3.
+[25] William Slofstra. Tsirelson’s problem and an embedding theorem for groups arising
+from non-local games. Journal of the American Mathematical Society , 2019. DOI:
+10.1090/jams/929.
+[26] Zhengfeng Ji, Anand Natarajan, Thomas Vidick, John Wright, and Henry Yuen.
+Mip*= re. arXiv preprint arXiv:2001.04383 , 2020.
+[27] Daniel Gottesman, Alexei Kitaev, and John Preskill. Encoding a qubit in an oscillator.
+Physical Review A, 64(1):012310, 2001. 10.1103/PhysRevA.64.012310.
+[28] Cihan Okay and Robert Raussendorf. Homotopical approach to quantum contextual-
+ity. arXiv preprint arXiv:1905.03822 , 2019. https://arxiv.org/abs/1905.03822.
+[29] Hammam Qassim, Joel J Wallman, and Joseph Emerson. Cliﬀord recompilation for
+faster classical simulation of quantum circuits. Quantum, 3:170, 2019.
+[30] Sergey Bravyi and Alexei Kitaev. Universal quantum computation with ideal cliﬀord
+gates and noisy ancillas. Physical Review A, 71(2):022316, 2005.
+[31] Hammam Qassim and Joel J Wallman. Classical vs quantum satisﬁability in lin-
+ear constraint systems modulo an integer. Journal of Physics A: Mathematical and
+Theoretical, 53(38):385304, aug 2020.
+[32] M Nest. Classical simulation of quantum computation, the Gottesman-Knill theorem,
+and slightly beyond. arXiv preprint arXiv:0811.0898 , 2008.
+[33] Wassily Hoeﬀding. Probability inequalities for sums of bounded random variables.
+Journal of the American statistical association , 58(301):13–30, 1963.
+[34] Sergey Bravyi and David Gosset. Complexity of quantum impurity problems. Com-
+munications in Mathematical Physics , 356(2):451–500, aug 2017.
+[35] Daniel J. Brod and Ernesto F. Galv˜ ao. Extending matchgates into universal quantum
+computation. Physical Review A, 84(2), aug 2011.
+92
+[36] Sergey Bravyi, David P Divincenzo, Roberto I Oliveira, and Barbara M Terhal.
+The complexity of stoquastic local Hamiltonian problems. arXiv preprint quant-
+ph/0606140, 2006.
+[37] Andrew M. Childs. Universal computation by quantum walk. Physical Review Letters,
+102(18), may 2009.
+[38] F. Verstraete, V. Murg, and J.I. Cirac. Matrix product states, projected entangled
+pair states, and variational renormalization group methods for quantum spin systems.
+Advances in Physics, 57(2):143–224, mar 2008.
+[39] N Schuch, M M Wolf, K G H Vollbrecht, and J I Cirac. On entropy growth and the
+hardness of simulating time evolution. New Journal of Physics , 10(3):033032, mar
+2008.
+[40] Dave Wecker, Bela Bauer, Bryan K. Clark, Matthew B. Hastings, and Matthias Troyer.
+Gate-count estimates for performing quantum chemistry on small quantum computers.
+Physical Review A, 90(2), aug 2014.
+[41] Dominic W. Berry, Andrew M. Childs, Richard Cleve, Robin Kothari, and Rolando D.
+Somma. Simulating Hamiltonian dynamics with a truncated Taylor series. Physical
+Review Letters, 114(9), mar 2015.
+[42] Masuo Suzuki. Transfer-matrix method and monte carlo simulation in quantum spin
+systems. Physical Review B, 31(5):2957–2965, mar 1985.
+[43] Simon Kochen and Ernst P Specker. The problem of hidden variables in quantum
+mechanics. In The logico-algebraic approach to quantum mechanics , pages 293–328.
+Springer, 1975. DOI: 10.1007/978-94-010-1795-417.
+[44] Zhengfeng Ji. Binary constraint system games and locally commutative reductions.
+arXiv preprint:1310.3794, 2013. https://arxiv.org/abs/1310.3794.
+[45] Ken Dykema, Vern I Paulsen, and Jitendra Prakash. Non-closure of the set of quantum
+correlations via graphs. Communications in Mathematical Physics, 365(3):1125–1142,
+2019. DOI: 10.1007/s00220-019-03301-1.
+[46] Andrea Coladangelo and Jalex Stark. Robust self-testing for linear constraint system
+games. arXiv preprint arXiv:1709.09267 , 2017. https://arxiv.org/abs/1709.09267.
+[47] Pierre Antoine Grillet. Abstract algebra, volume 242. Springer Science & Business
+Media, 2007.
+93
+[48] David Gross. Hudson’s theorem for ﬁnite-dimensional quantum systems. Journal of
+Mathematical Physics, 47:122107, 2006. DOI: 0.1063/1.2393152.
+[49] Nicolas Delfosse, Cihan Okay, Juan Bermejo-Vega, Dan E Browne, and Robert
+Raussendorf. Equivalence between contextuality and negativity of the Wigner func-
+tion for qudits. New Journal of Physics , 19(12):123024, 2017. DOI: 10.1088/1367-
+2630/aa8fe3.
+[50] Kathleen S. Gibbons, Matthew J. Hoﬀman, and William K. Wootters. Discrete phase
+space based on ﬁnite ﬁelds. Physical Review A, 70(6), dec 2004. DOI: 10.1103/Phys-
+RevA.70.062101.
+[51] Wai-Sin Ching. Linear equations over commutative rings. Linear Algebra and its
+Applications, 18(3):257–266, 1977. DOI: 10.1016/0024-3795(77)90055-6.
+[52] Arne Storjohann and Thom Mulders. Fast algorithms for linear algebra modulo n. In
+European Symposium on Algorithms, pages 139–150. Springer, 1998. DOI: 10.1007/3-
+540-68530-812.
+[53] The GAP Group. GAP – Groups, Algorithms, and Programming, Version 4.10.2 ,
+2019. https://www.gap-system.org.
+[54] Huangjun Zhu. Permutation symmetry determines the discrete wigner function. Phys-
+ical Review Letters, 116(4), jan 2016. DOI: 10.1103/physrevlett.116.040501.
+[55] Hermann Weyl. The theory of groups and quantum mechanics (page 277 ) . Courier
+Corporation, 1950.
+[56] John M Boyer and Wendy J Myrvold. On the cutting edge: simpliﬁed O(n) pla-
+narity by edge addition. J. Graph Algorithms Appl. , 8(3):241–273, 2004. DOI:
+10.1142/9789812773289-0014 .
+[57] William Slofstra and L. Zhang. Private communication, 2019.
+[58] Richard Cleve, P. Hoyer, Ben Toner, and John Watrous. Consequences and limits of
+nonlocal strategies. In Proceedings. 19th IEEE Annual Conference on Computational
+Complexity, 2004., page 236. IEEE, 2004.
+[59] Harry Buhrman, Richard Cleve, Serge Massar, and Ronald de Wolf. Nonlocality and
+communication complexity. Reviews of Modern Physics , 82(1):665–698, mar 2010.
+94
+[60] Elizabeth Crosson and Aram W Harrow. Rapid mixing of path integral monte carlo
+for 1d stoquastic hamiltonians. arXiv preprint, arXiv:1812.02144 , 2018.
+[61] Ramaswamy Jagannathan. On generalized cliﬀord algebras and their physical appli-
+cations. In The legacy of Alladi Ramakrishnan in the mathematical sciences , pages
+465–489. Springer, 2010.
+[62] Ulf Leonhardt. Discrete wigner function and quantum-state tomography. Physical
+Review A, 53(5):2998, 1996.
+[63] Tobias J. Osborne. Simulating adiabatic evolution of gapped spin systems. Physical
+Review A, 75(3), mar 2007.
+[64] Sebastian Paeckel, Thomas K¨ ohler, Andreas Swoboda, Salvatore R. Manmana, Ulrich
+Schollw¨ ock, and Claudius Hubig. Time-evolution methods for matrix-product states.
+Annals of Physics , 411:167998, dec 2019.
+[65] R. W. Spekkens. Contextuality for preparations, transformations, and unsharp mea-
+surements. Physical Review A, 71(5), may 2005.
+[66] K F Thompson, C Gokler, S Lloyd, and P W Shor. Time independent universal
+computing with spin chains: quantum plinko machine. New Journal of Physics ,
+18(7):073044, jul 2016.
+[67] Michael S. Underwood and David L. Feder. Universal quantum computation by dis-
+continuous quantum walk. Physical Review A, 82(4), oct 2010.
+95

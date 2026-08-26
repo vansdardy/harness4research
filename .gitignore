@@ -2,3 +2,4 @@
 *.pdf
 .claude
 .codex
+*draft.txt

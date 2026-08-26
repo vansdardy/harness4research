@@ -1,0 +1,103 @@
+\begin{thebibliography}{10}
+
+\bibitem{qassim}
+Hammam Qassim.
+\newblock {\em Classical simulations of quantum systems using stabilizer
+  decompositions}.
+\newblock PhD thesis, 2021.
+
+\bibitem{garcia2014PhD}
+Hector~J Garcia-Ramirez.
+\newblock {\em Hybrid Techniques for Simulating Quantum Circuits using the
+  Heisenberg Representation.}
+\newblock PhD thesis, 2014.
+
+\bibitem{bravyi2016trading}
+Sergey Bravyi, Graeme Smith, and John~A. Smolin.
+\newblock Trading classical and quantum computational resources.
+\newblock {\em \href{https://doi.org/10.1103%2Fphysrevx.6.021043}{Physical
+  Review X}}, 6(2), 2016.
+
+\bibitem{bravyi2016improved}
+Sergey Bravyi and David Gosset.
+\newblock Improved classical simulation of quantum circuits dominated by
+  clifford gates.
+\newblock {\em \href{https://doi.org/10.1103%2Fphysrevlett.116.250501}{Physical
+  Review Letters}}, 116:250501, 2016.
+
+\bibitem{bravyi2018simulation}
+Sergey Bravyi, Dan Browne, Padraic Calpin, Earl Campbell, David Gosset, and
+  Mark Howard.
+\newblock Simulation of quantum circuits by low-rank stabilizer decompositions.
+\newblock {\em \href{https://doi.org/10.22331%2Fq-2019-09-02-181}{Quantum}},
+  3:181, 2019.
+
+\bibitem{kocia2020improved}
+Lucas Kocia.
+\newblock Improved strong simulation of universal quantum circuits.
+\newblock {\em \href{https://arxiv.org/abs/2012.11739}{arXiv:2012.11739}},
+  2020.
+
+\bibitem{peleg2021lower}
+Shir Peleg, Amir Shpilka, and Ben Lee~Volk.
+\newblock Lower bounds on stabilizer rank.
+\newblock {\em \href{https://eccc.weizmann.ac.il/report/2021/077/}{Electronic
+  Colloquium on Computational Complexity, Report No. 77}}, 2021.
+
+\bibitem{huang2019explicit}
+Cupjin Huang, Michael Newman, and Mario Szegedy.
+\newblock Explicit lower bounds on strong quantum simulation.
+\newblock {\em \href{https://doi.org/10.1109/TIT.2020.3004427}{{IEEE}
+  Transactions on Information Theory}}, 66(9):5585--5600, 2020.
+
+\bibitem{morimae2019fine}
+Tomoyuki Morimae and Suguru Tamaki.
+\newblock Fine-grained quantum computational supremacy.
+\newblock {\em \href{https://doi.org/10.26421%2Fqic19.13-14-2}{Quantum
+  Information and Computation}}, 19(13{\&}14):1089--1115, 2019.
+
+\bibitem{huang2019tgates}
+Cupjin Huang, Michael Newman, and Mario Szegedy.
+\newblock Explicit lower bounds on strong simulation of quantum circuits in
+  terms of $ t $-gate count.
+\newblock {\em \href{https://arxiv.org/abs/1902.04764}{ arXiv:1902.04764}},
+  2019.
+
+\bibitem{bravyi2005universal}
+Sergey Bravyi and Alexei Kitaev.
+\newblock Universal quantum computation with ideal clifford gates and noisy
+  ancillas.
+\newblock {\em \href{https://doi.org/10.1103%2Fphysreva.71.022316}{Physical
+  Review A}}, 71(2):022316, 2005.
+
+\bibitem{Dehaene2003Clifford}
+Jeroen Dehaene and Bart De~Moor.
+\newblock Clifford group, stabilizer states, and linear and quadratic
+  operations over {GF}(2).
+\newblock {\em \href{https://doi.org/10.1103/PhysRevA.68.042318}{Physical
+  Review A}}, 68(4):042318, 2003.
+
+\bibitem{vdnest2010classical}
+Maarten Van~den Nest.
+\newblock Classical simulation of quantum computation, the {G}ottesman-{K}nill
+  theorem, and slightly beyond.
+\newblock {\em \href{https://doi.org/10.26421/QIC10.3-4-6}{Quantum Information
+  and Computation}}, 10(3{\&}4):0258--0271, 2010.
+
+\bibitem{watrous2018theory}
+John Watrous.
+\newblock {\em The theory of quantum information}.
+\newblock Cambridge University Press, 2018.
+
+\bibitem{macwilliams1977theory}
+Florence~Jessie MacWilliams and Neil James~Alexander Sloane.
+\newblock {\em The theory of error correcting codes}, volume~16.
+\newblock Elsevier, 1977.
+
+\bibitem{beverland2020lower}
+Michael Beverland, Earl Campbell, Mark Howard, and Vadym Kliuchnikov.
+\newblock Lower bounds on the non-clifford resources for quantum computations.
+\newblock {\em \href{https://doi.org/10.1088/2058-9565/ab8963}{Quantum Science
+  and Technology}}, 5(3):035009, 2020.
+
+\end{thebibliography}
