@@ -193,10 +193,23 @@ three-term decomposition of \(\psi=d\otimes d\). If the affine supports
 proper, place it in an affine hyperplane \(H\) and restrict to the opposite
 coset \(K\). The corresponding Pauli-\(Z\) projection kills that summand and
 preserves the other stabilizer summands, so \(\chi(\psi|_K)\le2\). Therefore
-a rank-three decomposition implies either (i) one of the 2046
-hyperplane-coset restrictions has rank at most two, or (ii) all three
-summands have full support. Excluding these two cases would prove
-\(\chi(d\otimes d)=4\), but neither exclusion has yet been carried out.
+a decomposition with at most three summands implies either (i) one of the 2046
+hyperplane-coset restrictions has rank at most two, or (ii) every summand has
+full support. Thus the second branch in the finite check must exclude
+representations by at most three full-support stabilizer phases, including
+repeated rays (which can be combined), rather than only triples of distinct
+rays. Excluding these two cases would prove \(\chi(d\otimes d)=4\), but neither
+exclusion has yet been carried out.
+
+No ten-bit hyperplane-coset restriction of \(d\otimes d\) has rank one. Its
+phase exponent modulo two has polar form \(B\oplus B\), whose radical has
+dimension two and whose nondegenerate quotient has dimension eight. A totally
+isotropic subspace therefore has dimension at most \(2+8/2=6\). A
+full-support stabilizer phase on a nine-dimensional affine hyperplane would
+force its direction space to be totally isotropic, because all mixed second
+differences of a stabilizer exponent are even. Thus each restriction in the
+finite branch has rank at least two; the case that remains to exclude is
+exactly rank two.
 
 If the five-dimensional graph \(z=y+1^5\) were one support and the other two
 supports were proper, the other two must cover 992 points. Two proper affine
@@ -209,14 +222,69 @@ contains exactly those two stabilizer rays. A full-support combination has
 amplitude ratio in \(\{\pm1,\pm i\}\) between the \(q=1\) and \(q=0\) level
 sets. The ratios \(\pm1\) give the original rays, while \(\pm i\) give
 \(i^{\pm q}\), excluded by the odd mixed second difference. If one level
-amplitude vanishes, the support is a \(q\)-level set of size 16. The zero
-level is not affine: it contains \(0\),
+amplitude vanishes, the support is a \(q\)-level set. Translation by
+\(r=1^5\) swaps the levels because \(q(y+r)=q(y)+1\), so both have size 16.
+The zero level is not affine: it contains \(0\),
 \(u=e_1+e_2+e_3\), and \(v=e_1+e_2+e_4\), but not
 \(u+v=e_3+e_4\). If the one level were affine, its complement would be an
 affine hyperplane, contradicting the preceding fact. This rigidity alone does not imply
 multiplicativity: the Lovitz–Steffan theorem proves rank four only for a
 particular generic family and does not state that “exactly two stabilizer
 rays in the plane” is a sufficient hypothesis.
+
+Writing
+
+\[
+u=\sum_y|y\rangle,\qquad v=\sum_y(-1)^{q(y)}|y\rangle
+\]
+
+gives the useful exact form
+
+\[
+d=\frac{1-i}{2}(u+iv).
+\]
+
+Although this resembles a logical one-qubit magic state, \(u,v\) are not a
+logical stabilizer basis of a common five-qubit stabilizer code. In graph-state
+language their unsigned stabilizer intersection is controlled by the radical
+\(\langle r\rangle\), and translation by \(r\) has opposite signs on the two
+states.
+
+The tensor-square plane has an exact rigidity statement: the only stabilizer
+rays in
+\(\operatorname{span}\{u\otimes u,u\otimes v,v\otimes u,v\otimes v\}\)
+are those four product rays. Every vector in the plane is constant on the four
+cells indexed by \((q(y),q(z))\), each of size 256. An affine support can use
+only 1, 2, or 4 cells. One-cell supports and row/column two-cell supports have
+a nonaffine \(q\)-level projection. Diagonal two-cell supports are levels of
+the nonaffine quadratic \(q(y)+q(z)\). For full support, restrictions to fixed
+\(y\) or \(z\) and the one-copy plane lemma force a two-by-two sign table.
+Product sign tables are the four product rays; the only other class contains
+\((-1)^{q(y)q(z)}\), whose exponent \(2q(y)q(z)\) has fourth additive
+difference 2 modulo 4 in directions \((e_1,0),(e_2,0),(0,e_1),(0,e_2)\).
+Thus a three-term decomposition of \(d^{\otimes2}\), if one exists, must use a
+stabilizer outside this natural four-dimensional plane.
+
+A suggested 64-point enlargement of the graph slice is not a stabilizer and
+must not be used. On
+
+\[
+L=\{(y,y+sr):y\in\mathbb F_2^5,\ s\in\mathbb F_2\}
+\]
+
+the target phase is \((-1)^{q(y)}\) for \(s=0\) and \(-i\) for \(s=1\).
+An exponent is
+
+\[
+H(y,s)=2q(y)+3s+2s q(y)\pmod4.
+\]
+
+The mixed third difference in coordinate directions \(e_1,e_2,s\) is 2
+modulo 4, excluding a stabilizer phase. The error in the tempting formula
+\(-2q(y)-s\) is treating \(q(y+r)=q(y)+1\pmod2\) as an equality of ordinary
+integer representatives. Total isotropy of the direction space for
+\(B\oplus B\) is necessary for this phase restriction to be stabilizer, but
+is not sufficient.
 
 For fixed qubit number there are only finitely many stabilizer rays. Hence
 the set of states of stabilizer rank at most \(k\) is a finite union of

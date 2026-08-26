@@ -287,11 +287,65 @@ $q=1$. If it is a full-support stabilizer state, their ratio must lie in
 $\{1,-1,i,-i\}$. Ratios $1$ and $-1$ give the original two rays. Ratios $i$
 and $-i$ give phases proportional to $i^q$ and $i^{-q}$, and the same
 mixed-second-difference calculation excludes both. If one amplitude vanishes,
-the support is a level set of $q$, each of which has size 16. The zero level
-is not affine: it contains $0$, $u=e_1+e_2+e_3$, and
+the support is a level set of $q$. Translation by $r=1^5$ interchanges the two
+level sets because $q(y+r)=q(y)+1$; hence each has size $2^4=16$. The zero
+level is not affine: it contains $0$, $u=e_1+e_2+e_3$, and
 $v=e_1+e_2+e_4$, but not $u+v=e_3+e_4$. The one level cannot be affine
 either, because its complement would then be the opposite affine hyperplane.
 Hence no further stabilizer ray occurs.
+
+This plane rigidity has a tensor-square analogue. Write
+
+$$
+|u\rangle=\sum_y|y\rangle,\qquad
+|v\rangle=\sum_y(-1)^{q(y)}|y\rangle,
+$$
+
+so that $u,v$ are orthogonal stabilizer states and
+
+$$
+|d\rangle=\frac{1-i}{2}(|u\rangle+i|v\rangle).
+$$
+
+The only stabilizer rays in
+$\operatorname{span}\{u\otimes u,u\otimes v,v\otimes u,v\otimes v\}$ are
+the four displayed product rays. To prove this, observe that every vector in
+this four-dimensional space has a constant amplitude $m_{ab}$ on each cell
+
+$$
+\{(y,z):q(y)=a,\ q(z)=b\},\qquad (a,b)\in\mathbb F_2^2,
+$$
+
+and every cell has size $16^2=256$. If its support is affine, the number of
+nonzero cells is therefore $1$, $2$, or $4$. A one-cell support is not affine,
+because its projection onto either block is a nonaffine level set of $q$. A
+two-cell support is either a row, a column, or one of the two diagonals. Rows
+and columns again have a nonaffine projection. A diagonal is a level set of
+the balanced quadratic $q(y)+q(z)$; if it were an affine hyperplane, that
+Boolean quadratic would be affine, contrary to its nonzero polar form.
+
+It remains to consider full support. Restricting a putative stabilizer state
+to a fixed computational-basis value of $z$ gives a full-support stabilizer in
+$\operatorname{span}\{u,v\}$. The preceding plane result forces the ratio
+$m_{1b}/m_{0b}$ to be $\pm1$, and restricting in the other direction gives
+the analogous conclusion for rows. After an overall scaling, the table
+$(m_{ab})$ is therefore a sign table. Every two-by-two sign table is either a
+product of a sign depending only on $a$ and one depending only on $b$, or
+differs from such a product by $(-1)^{ab}$. The product tables give exactly
+the four product rays above. The remaining possibility is not stabilizer:
+its exponent contains $2q(y)q(z)$ modulo four, whose fourth additive
+difference in the directions
+
+$$
+(e_1,0),\ (e_2,0),\ (0,e_1),\ (0,e_2)
+$$
+
+at the origin is $2\pmod4$. Every stabilizer exponent $L+2Q$ is quadratic
+modulo four and has vanishing fourth additive differences. This proves the
+claim. Since all four coordinates of $d\otimes d$ in this product basis are
+nonzero, no three stabilizer rays lying in this four-dimensional plane can
+span it. Thus any three-term decomposition sought in (7) must use at least
+one stabilizer state outside the natural tensor-square plane.
 
 There is at least one exact entangled stabilizer slice in (7). The polar form
 of $q$ is
@@ -306,6 +360,26 @@ a stabilizer state entangled across the $5|5$ cut. This observation has not
 been extended here to a three-term decomposition of the full phase function
 (7); the ordinary four products of the two summands of $D$ remain the only
 certified decomposition. Thus (4) currently reproduces nine, not eight.
+
+The graph cannot be enlarged in the most obvious maximal-isotropic way. Let
+
+$$
+L=\{(y,z):z=y+sr,\ y\in\mathbb F_2^5,\ s\in\mathbb F_2\}.
+$$
+
+Its six-dimensional direction space is totally isotropic for $B\oplus B$,
+but that parity condition is only necessary, not sufficient, for the
+restriction of (7) to be a stabilizer phase. Indeed, on $L$ the target phase
+is $(-1)^{q(y)}$ for $s=0$ and $-i$ for $s=1$. One exponent modulo four is
+
+$$
+H(y,s)=2q(y)+3s+2s q(y)\pmod4.
+$$
+
+Its third additive difference in the directions $e_1,e_2$ of the $y$ block
+and the $s$ direction is $2\pmod4$, whereas every stabilizer exponent has
+vanishing third additive differences. Hence this 64-point restriction is not
+a stabilizer state; only the 32-point graph slice above is certified.
 
 There is, however, a finite support-dimension reduction for deciding whether
 the missing three-term decomposition exists. Let
@@ -327,15 +401,28 @@ $K$ is a Pauli-$Z$ eigenspace projection, so it takes every stabilizer state
 to zero or a stabilizer state. It annihilates $\varphi_j$, leaving at most two
 summands for $\psi|_K$.
 
+In fact, every one of these hyperplane-coset restrictions has rank at least
+two. The exponent of (7), reduced modulo two, is $q(y)+q(z)$, with polar form
+$B\oplus B$. The radical of this alternating form has dimension two, and its
+nondegenerate quotient has dimension eight, so a totally isotropic subspace
+has dimension at most $2+8/2=6$. If the restriction to an affine hyperplane
+were a stabilizer state, its nine-dimensional direction space would have to
+be totally isotropic: otherwise some mixed second difference of its exponent
+would be odd. This is impossible. Hence the restrictions arising above would
+have rank exactly two, not one.
+
 Consequently, proving $\chi(d\otimes d)=4$ can be reduced to two exact tasks:
-exclude rank at most two for each of the $2(2^{10}-1)=2046$ hyperplane-coset
-restrictions, and exclude decompositions by three full-support stabilizer
-phases. This is a finite reduction, not its completion; no classification or
-exhaustive certificate carrying out those two tasks is supplied here. It
-also constrains the five-dimensional graph slice: if it were one summand and
-the other two supports were both proper, those two supports would have to be
-the two complementary affine hyperplanes (otherwise their union has at most
-$768<992$ points), although a full-support remaining summand is also possible.
+exclude rank two for each of the $2(2^{10}-1)=2046$ hyperplane-coset
+restrictions, and exclude representations by at most three full-support
+stabilizer phases. Repeated rays are allowed in this statement (and may of
+course be combined); thus the second task includes possible ranks one and two,
+not only decompositions having three distinct rays. This is a finite
+reduction, not its completion; no classification or exhaustive certificate
+carrying out those two tasks is supplied here. It also constrains the
+five-dimensional graph slice: if it were one summand and the other two
+supports were both proper, those two supports would have to be the two
+complementary affine hyperplanes (otherwise their union has at most $768<992$
+points), although a full-support remaining summand is also possible.
 
 #### The lower bound
 
@@ -445,7 +532,7 @@ here.
 
 #### Remaining open issues
 
-1. **Eight-term upper bound.** The gap is whether the upper bound after (2) can be lowered to eight. The exact product construction (2) was analyzed, including the independence of its nine summands. The product-cut argument also forces strong dependencies in any eight-term decomposition of product stabilizer states, but it does not constrain genuinely entangled stabilizer summands. Equation (4) reduces one concrete route to finding a three-term decomposition of the ten-qubit phase function (7); the radical supplies one entangled affine slice but not the other required terms. The support-dimension argument further reduces exclusion of this route to hyperplane restrictions and the full-support case, but those finite checks were not completed. Either a three-term certificate for (7), or an affine-quadratic description of eight different stabilizer summands with an exact amplitude verification, would close the upper-bound gap.
+1. **Eight-term upper bound.** The gap is whether the upper bound after (2) can be lowered to eight. The exact product construction (2) was analyzed, including the independence of its nine summands. The product-cut argument also forces strong dependencies in any eight-term decomposition of product stabilizer states, but it does not constrain genuinely entangled stabilizer summands. Equation (4) reduces one concrete route to finding a three-term decomposition of the ten-qubit phase function (7). The tensor-square-plane classification proves that such a decomposition cannot stay inside the natural span of the four product summands, and the tempting 64-point enlargement of the known graph slice was excluded by a third-difference obstruction. The support-dimension argument further reduces exclusion of this route to hyperplane restrictions and the full-support case, but those finite checks were not completed. Either a three-term certificate for (7), necessarily using stabilizers outside the natural tensor-square plane, or an affine-quadratic description of eight different stabilizer summands with an exact amplitude verification, would close the upper-bound gap.
 
 2. **Lower bound above three.** The gap in (9)–(13) is that the contractions certify only rank three. The $\mathrm{cat}_2$ contraction (10) reduces to $\mathrm{cat}_{10}$, but the cited small-cat classification does not prove $\chi(\mathrm{cat}_{10})\geq4$; the projection from $\mathrm{cat}_{12}$ also supplies no stronger number. Excluding all three-stabilizer spans containing $\mathrm{cat}_{10}$, or finding another contraction with a known rank-four output, would close this gap; it would improve the interval but would not settle the eight-term conjecture.
 
