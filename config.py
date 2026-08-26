@@ -1,9 +1,14 @@
 # General Configuration
-MAX_ROUNDS = 3
+## Environment
+ANTHROPIC_API_KEY = "my-secret-key"
+OPENAI_API_KEY = "my-secret-key"
+## Workflow
+MAX_ROUNDS = 5
 PROBLEM_FILE = "problem.tex"
 NOTE_FILE = "research_note.md"
 RESULT_FILE = "answer.tex"
 REF_PATH = "references/"
+
 
 # Per-Agent Configuration
 ## Author
