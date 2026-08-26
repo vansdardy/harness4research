@@ -31,7 +31,9 @@ For the repetition-code support of $g$, using the affine coordinate $t\in\mathbb
 
 The vectors $g,e,k$ are independent. A linear relation evaluated at weights two and four forces the $e,k$ coefficients to vanish, after which the $g$ coefficient vanishes. Hence their nine pairwise tensor products are independent. This says only that the displayed tensor-product decomposition cannot be shortened by deletion; it gives no general rank-nine lower bound.
 
-Qassim's Waterloo thesis is dated February 19, 2021 in the official repository record. It states the target conjecture as equation (4.30), near the end of §4.3:
+Qassim's Waterloo thesis title page gives 2020, while the official repository
+records a February 19, 2021 deposit. It states the target conjecture as
+equation (4.30) in §4.4, “Discussion, conjectures, and open problems”:
 
 \[
 \chi(\mathrm{cat}_6\otimes\mathrm{cat}_6)\leq 8.
@@ -137,19 +139,33 @@ and therefore
 Thus $\chi(D^{\otimes2})\le3$ would prove the desired upper bound eight. The
 ordinary product expansion gives four terms and recovers nine.
 
-After even-parity compression
+The five-qubit compression must be expressed as an invertible six-bit Clifford
+map, not as a dimension-changing “reversible” map. Use
 
 \[
-x=(y_1+\cdots+y_5,y_1,\ldots,y_5),
+(x_1,\ldots,x_6)\mapsto(p,y_1,\ldots,y_5)
+=(x_1+\cdots+x_6,x_2,\ldots,x_6).
 \]
 
-one has
+Its inverse is
+
+\[
+x=(p+y_1+\cdots+y_5,y_1,\ldots,y_5).
+\]
+
+On the even-parity support \(p=0\), one has
 
 \[
 S(x)=q(y):=\sum_{j<k}y_jy_k+\sum_jy_j\pmod2,
 \qquad
-D\simeq \sum_y i^{-q(y)}|y\rangle.
+U D=-\sqrt2\,|0\rangle\otimes
+\sum_y i^{-q(y)}|y\rangle.
 \]
+
+The scalar follows because \(b+c=-\sqrt2\) at \(q=0\) and
+\(b-c=i\sqrt2=-\sqrt2(-i)\) at \(q=1\). Clifford invariance and contraction
+with \(\langle0|\) give \(\chi(D)=\chi(d)\) and
+\(\chi(D\otimes D)=\chi(d\otimes d)\).
 
 It is essential that $q$ in the exponent is the Boolean value $0$ or $1$;
 writing $i^{\sum_{j<k}y_jy_k+\sum_jy_j}$ as an unrestricted integer exponent
@@ -169,6 +185,45 @@ ten-qubit phase $i^{-q(y)-q(z)}$ is the constant $-i$ on the affine graph
 $z=y+r$. The uniform state on this graph is an exact stabilizer state entangled
 across the $5|5$ cut. This is one plausible summand of a rank-three search, but
 no exact completion by two other stabilizer states was found.
+
+There is a rigorous finite support-dimension reduction for a possible
+three-term decomposition of \(\psi=d\otimes d\). If the affine supports
+\(A_1,A_2,A_3\) cover the full ten-bit support, then
+\(\max_j\dim A_j\ge9\), because \(3\cdot2^8<2^{10}\). If any \(A_j\) is
+proper, place it in an affine hyperplane \(H\) and restrict to the opposite
+coset \(K\). The corresponding Pauli-\(Z\) projection kills that summand and
+preserves the other stabilizer summands, so \(\chi(\psi|_K)\le2\). Therefore
+a rank-three decomposition implies either (i) one of the 2046
+hyperplane-coset restrictions has rank at most two, or (ii) all three
+summands have full support. Excluding these two cases would prove
+\(\chi(d\otimes d)=4\), but neither exclusion has yet been carried out.
+
+If the five-dimensional graph \(z=y+1^5\) were one support and the other two
+supports were proper, the other two must cover 992 points. Two proper affine
+subspaces can do this only if both are disjoint nine-dimensional hyperplanes;
+nonparallel hyperplanes have union 768. This restricts, but does not exclude,
+using the graph slice.
+
+The plane spanned by the two full-support stabilizers \(1\) and \((-1)^q\)
+contains exactly those two stabilizer rays. A full-support combination has
+amplitude ratio in \(\{\pm1,\pm i\}\) between the \(q=1\) and \(q=0\) level
+sets. The ratios \(\pm1\) give the original rays, while \(\pm i\) give
+\(i^{\pm q}\), excluded by the odd mixed second difference. If one level
+amplitude vanishes, the support is a \(q\)-level set of size 16. The zero
+level is not affine: it contains \(0\),
+\(u=e_1+e_2+e_3\), and \(v=e_1+e_2+e_4\), but not
+\(u+v=e_3+e_4\). If the one level were affine, its complement would be an
+affine hyperplane, contradicting the preceding fact. This rigidity alone does not imply
+multiplicativity: the Lovitz–Steffan theorem proves rank four only for a
+particular generic family and does not state that “exactly two stabilizer
+rays in the plane” is a sufficient hypothesis.
+
+For fixed qubit number there are only finitely many stabilizer rays. Hence
+the set of states of stabilizer rank at most \(k\) is a finite union of
+linear spans of at most \(k\) stabilizer rays and is Zariski- and
+Euclidean-closed. There is therefore no separate border-stabilizer-rank
+degeneration that could turn a failed exact rank-three decomposition into a
+limiting rank-three decomposition on these ten qubits.
 
 The canonical-pair lemma of Qassim--Pashayan--Gosset is consistent with this
 compression: the two stabilizers $e,k$ are orthogonal, since translation by
@@ -209,13 +264,16 @@ Computational investigations, useful only as search guidance:
 
 - The Clifford $A=e^{-i\pi/4}SX$ has eigenvectors $T,T^\perp$ with eigenvalues $+1,-1$. Applying $A$ on any even subset of the six qubits fixes $C$. Applying these symmetries to $g,e,k$ generated $48$ distinct stabilizer rays spanning a $32$-dimensional subspace. Randomized searches over products of these rays found no exact eight-term witness. This is evidence only about that restricted pool.
 
-- The parity support can be Clifford-compressed by setting
+- The parity support can be Clifford-compressed with the six-bit invertible map
 
   \[
-  x=(y_1+\cdots+y_5,y_1,\ldots,y_5).
+  x\mapsto(x_1+\cdots+x_6,x_2,\ldots,x_6).
   \]
 
-  Thus one cat state is Clifford-equivalent to a five-qubit state and its square to a ten-qubit target. A simulated-annealing search at rank eight did not yield a certificate; this is not evidence against the conjecture.
+  Thus one cat state is Clifford-equivalent to a five-qubit state tensored
+  with a stabilizer ancilla, and its square reduces in the same way to a
+  ten-qubit target. A simulated-annealing search at rank eight did not yield a
+  certificate; this is not evidence against the conjecture.
 
 - A warm-started simulated-annealing search for a rank-three decomposition of
   the smaller target $D^{\otimes2}$ also did not improve on the residual of a

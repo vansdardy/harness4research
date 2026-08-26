@@ -24,7 +24,7 @@ $$
 \chi(C\otimes C)\leq8
 $$
 
-remains unresolved here; it is Qassim's Conjecture (4.30).
+remains unresolved here; it is Qassim's Conjecture (4.30) in thesis §4.4.
 
 #### An exact three-term decomposition of $C$
 
@@ -219,29 +219,47 @@ $$
 In particular, an exact three-stabilizer decomposition of $D\otimes D$ would
 prove the desired bound $\chi(C\otimes C)\leq8$.
 
-This reduced target has a simple five-qubit description. Apply the reversible
-linear change of computational coordinates
+This reduced target has a simple five-qubit description, but the compression
+must be implemented as a six-bit reversible map. Let $U$ be the
+computational-basis permutation induced by
 
 $$
-x=(y_1+\cdots+y_5,y_1,\ldots,y_5),\qquad y\in\mathbb F_2^5,
+(x_1,\ldots,x_6)\longmapsto(p,y_1,\ldots,y_5)
+  =(x_1+\cdots+x_6,x_2,\ldots,x_6).
 $$
 
-which is implemented by CNOT gates and removes the even-parity constraint. If
+Its inverse is
+
+$$
+x=(p+y_1+\cdots+y_5,y_1,\ldots,y_5),
+$$
+
+so $U$ is an invertible linear transformation implemented by CNOT gates. On
+the even-parity support $V$, the first output bit is $p=0$. If
 
 $$
 q(y)=\sum_{1\leq j<k\leq5}y_jy_k+\sum_{j=1}^5y_j\pmod2,
 \tag{5}
 $$
 
-then $S(x)=q(y)$. Up to a nonzero scalar, the compressed state is therefore
+then $S(x)=q(y)$ when $p=0$. Since the amplitudes of $D$ are
+$-\sqrt2$ for $S=0$ and $i\sqrt2$ for $S=1$, the exact transformed
+state is
 
 $$
 |d\rangle=\sum_{y\in\mathbb F_2^5}i^{-q(y)}|y\rangle,
-\qquad |D\rangle\simeq |d\rangle,
+\qquad U|D\rangle=-\sqrt2\,|0\rangle\otimes|d\rangle.
 \tag{6}
 $$
 
-where $q(y)$ in the exponent is represented by the integer $0$ or $1$.
+Here $q(y)$ in the exponent is represented by the integer $0$ or $1$.
+Clifford invariance, adjoining a stabilizer ancilla, and contraction with
+$\langle0|$ give the two directions needed for
+
+$$
+\chi(D)=\chi(d),\qquad \chi(D\otimes D)=\chi(d\otimes d).
+$$
+
 Accordingly, the missing certificate in this route is a three-term
 affine-quadratic decomposition of the ten-qubit phase function
 
@@ -262,6 +280,19 @@ $$
 
 Thus (6) is not a stabilizer state and $\chi(D)=2$.
 
+There are exactly two stabilizer rays in the plane spanned by the two
+full-support stabilizers $1$ and $(-1)^q$. Indeed, up to overall scale, any
+vector in that plane has one amplitude $a+b$ on $q=0$ and another $a-b$ on
+$q=1$. If it is a full-support stabilizer state, their ratio must lie in
+$\{1,-1,i,-i\}$. Ratios $1$ and $-1$ give the original two rays. Ratios $i$
+and $-i$ give phases proportional to $i^q$ and $i^{-q}$, and the same
+mixed-second-difference calculation excludes both. If one amplitude vanishes,
+the support is a level set of $q$, each of which has size 16. The zero level
+is not affine: it contains $0$, $u=e_1+e_2+e_3$, and
+$v=e_1+e_2+e_4$, but not $u+v=e_3+e_4$. The one level cannot be affine
+either, because its complement would then be the opposite affine hyperplane.
+Hence no further stabilizer ray occurs.
+
 There is at least one exact entangled stabilizer slice in (7). The polar form
 of $q$ is
 
@@ -275,6 +306,36 @@ a stabilizer state entangled across the $5|5$ cut. This observation has not
 been extended here to a three-term decomposition of the full phase function
 (7); the ordinary four products of the two summands of $D$ remain the only
 certified decomposition. Thus (4) currently reproduces nine, not eight.
+
+There is, however, a finite support-dimension reduction for deciding whether
+the missing three-term decomposition exists. Let
+
+$$
+|\psi\rangle=|d\rangle\otimes|d\rangle
+$$
+
+and suppose $\psi=\sum_{j=1}^3c_j\varphi_j$, where
+$A_j\subseteq\mathbb F_2^{10}$ is the affine support of $\varphi_j$. Because
+$\psi$ has full support, the $A_j$ cover $\mathbb F_2^{10}$; in particular,
+at least one has dimension at least nine, since $3\cdot2^8<2^{10}$.
+
+More strongly, either all three $A_j$ have full dimension, or some affine
+hyperplane-coset restriction of $\psi$ has stabilizer rank at most two. To see
+this, if $A_j$ is proper, place it inside an affine hyperplane $H$ and let
+$K=\mathbb F_2^{10}\setminus H$, which is the opposite coset. Projection onto
+$K$ is a Pauli-$Z$ eigenspace projection, so it takes every stabilizer state
+to zero or a stabilizer state. It annihilates $\varphi_j$, leaving at most two
+summands for $\psi|_K$.
+
+Consequently, proving $\chi(d\otimes d)=4$ can be reduced to two exact tasks:
+exclude rank at most two for each of the $2(2^{10}-1)=2046$ hyperplane-coset
+restrictions, and exclude decompositions by three full-support stabilizer
+phases. This is a finite reduction, not its completion; no classification or
+exhaustive certificate carrying out those two tasks is supplied here. It
+also constrains the five-dimensional graph slice: if it were one summand and
+the other two supports were both proper, those two supports would have to be
+the two complementary affine hyperplanes (otherwise their union has at most
+$768<992$ points), although a full-support remaining summand is also possible.
 
 #### The lower bound
 
@@ -384,7 +445,7 @@ here.
 
 #### Remaining open issues
 
-1. **Eight-term upper bound.** The gap is whether the upper bound after (2) can be lowered to eight. The exact product construction (2) was analyzed, including the independence of its nine summands. The product-cut argument also forces strong dependencies in any eight-term decomposition of product stabilizer states, but it does not constrain genuinely entangled stabilizer summands. Equation (4) reduces one concrete route to finding a three-term decomposition of the ten-qubit phase function (7); the radical supplies one entangled affine slice but not the other required terms. Either such a three-term certificate, or an affine-quadratic description of eight different stabilizer summands with an exact amplitude verification, would close this gap.
+1. **Eight-term upper bound.** The gap is whether the upper bound after (2) can be lowered to eight. The exact product construction (2) was analyzed, including the independence of its nine summands. The product-cut argument also forces strong dependencies in any eight-term decomposition of product stabilizer states, but it does not constrain genuinely entangled stabilizer summands. Equation (4) reduces one concrete route to finding a three-term decomposition of the ten-qubit phase function (7); the radical supplies one entangled affine slice but not the other required terms. The support-dimension argument further reduces exclusion of this route to hyperplane restrictions and the full-support case, but those finite checks were not completed. Either a three-term certificate for (7), or an affine-quadratic description of eight different stabilizer summands with an exact amplitude verification, would close the upper-bound gap.
 
 2. **Lower bound above three.** The gap in (9)–(13) is that the contractions certify only rank three. The $\mathrm{cat}_2$ contraction (10) reduces to $\mathrm{cat}_{10}$, but the cited small-cat classification does not prove $\chi(\mathrm{cat}_{10})\geq4$; the projection from $\mathrm{cat}_{12}$ also supplies no stronger number. Excluding all three-stabilizer spans containing $\mathrm{cat}_{10}$, or finding another contraction with a known rank-four output, would close this gap; it would improve the interval but would not settle the eight-term conjecture.
 

@@ -1,7 +1,7 @@
 # Environment Contract
 
 # Author Prompts
-AUTHOR_ROUND_ZERO_CLI = """
+AUTHOR_ROUND_ZERO = """
 ### Budget: Round 0 of [MAX_ROUNDS] ###
 First, quickly scan the directory, and understand its structure.
 
@@ -73,7 +73,7 @@ honest "Remaining open issues" section is not the same as ready.
 {problem}
 """
 
-AUTHOR_ROUNDS_CLI = """
+AUTHOR_ROUNDS = """
 ### Budget: Round [N] of [MAX_ROUNDS] ###
 
 Act as a research-level author iterating on a written deliverable in
@@ -154,7 +154,7 @@ issues": for each gap state (a) what it is, (b) where it appears,
 {critic}
 """
 
-AUTHOR_COUNCIL_RESPONSE_CLI = """
+AUTHOR_COUNCIL_RESPONSE = """
 Here is the outside consultant's reply to your question:
 
 {council_response}
@@ -165,7 +165,7 @@ exactly one of <ready>true</ready> or <ready>false</ready> on its
 own line.
 """
 
-AUTHOR_FINAL_WRITEUP_CLI = """
+AUTHOR_FINAL_WRITEUP = """
 This is the final round. You may NOT consult an outside expert this
 round. You still have the sandbox at `sandbox/` available
 (activate the venv first: `source sandbox/.venv/bin/activate`, and install
@@ -204,7 +204,7 @@ on its own line — even here, be honest: if (b) applies, that's
 """
 
 # Critic Prompts
-CRITIC_ROUND_ZERO_CLI = """
+CRITIC_ROUND_ZERO = """
 Act as a strict mathematical referee. Below is a problem statement
 together with an attempt at a solution written in Markdown. Perform
 an in-depth review, going section by section to audit validity.
@@ -243,7 +243,7 @@ spot. Otherwise concentrate on answer.md.
 {research_notes}
 """
 
-CRITIC_ROUNDS_CLI = """
+CRITIC_ROUNDS = """
 The author has revised the proof in response to your previous review.
 Please review the revised draft. Re-read the proof in full — do not
 assume earlier concerns were resolved. Note which of your previous
@@ -271,7 +271,7 @@ the stated problem, with no remaining gaps. End with
 """
 
 # Council Prompts
-COUNCIL_ROUNDS_CLI = """
+COUNCIL_ROUNDS = """
 You are being consulted as an independent expert. A researcher is
 iterating on a proof/writeup and has hit a specific sub-question they
 want a second opinion on.
