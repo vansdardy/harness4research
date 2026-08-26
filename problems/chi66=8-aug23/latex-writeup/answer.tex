@@ -1,0 +1,1373 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{braket}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\cat}{\mathrm{cat}}
+\newcommand{\Stab}{\mathrm{Stab}}
+\newcommand{\Cliff}{\mathrm{Cliff}}
+\newcommand{\qq}{\mathsf{q}}
+\newcommand{\bb}{\mathsf{b}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\spn}{\operatorname{span}}
+\newcommand{\Ev}{\mathcal{E}}
+\newcommand{\one}{\mathbf{1}}
+\newcommand{\wt}[1]{\lvert #1\rvert}
+\DeclareMathOperator{\pol}{pol}
+
+\title{\bfseries The stabilizer rank of the tensor square\\ of the six-qubit cat state}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Let $\ket{\cat_6}$ denote the six-qubit cat state built from the magic state
+$\ket{T}\propto\ket{0}+e^{i\pi/4}\ket{1}$. Qassim's thesis records the bound
+$\chi(\cat_6)\le 3$ and conjectures that stabilizer rank fails to be multiplicative
+already for two copies, i.e.\ that $\chi(\cat_6^{\otimes2})\le 8$. This note gives a
+self-contained treatment of that question. We prove
+$3\le\chi(\cat_6^{\otimes2})\le 9$ with complete proofs of both bounds; we exhibit an
+exact Clifford compression that identifies $\cat_6^{\otimes 2}$ with a full-support
+ten-qubit state, reducing the conjecture to the single inequality
+$\chi(d^{\otimes2})\le 3$ for an explicit five-qubit state $d$ of stabilizer rank two;
+and we prove a family of rigidity statements that delimit where a hypothetical
+eight-term decomposition can live. In particular we show that any eight-term
+decomposition all of whose summands are product across the natural $6\,|\,6$ cut must
+have linearly dependent left and right factor families, that the four-dimensional
+``tensor-square plane'' of $d^{\otimes2}$ contains exactly four stabilizer rays and
+therefore cannot support a three-term decomposition, and that the natural
+maximal-isotropic enlargement of the one entangled stabilizer slice of $d^{\otimes2}$
+fails a third-difference test. On the lower-bound side we prove the exact relations
+$\chi(\cat_{10})\le\chi(\cat_6^{\otimes2})\le\chi(\cat_{12})$. The conjecture itself
+remains open; Section~\ref{sec:open} states precisely what is missing.
+All explicit identities in this note have been verified exactly in
+$\mathbb{Q}(e^{i\pi/4})$; see Appendix~\ref{app:verify}.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+\subsection{Background}
+
+Classical simulation algorithms for Clifford${}+{}$T circuits run in time controlled by
+the \emph{stabilizer rank} $\chi(\psi)$: the least number of stabilizer states whose
+complex span contains $\psi$. The state that matters is the magic state
+$\ket{T}\propto\ket{0}+e^{i\pi/4}\ket{1}$, and the central open problem is the growth
+rate of $\chi(T^{\otimes m})$. Writing
+\[
+\alpha:=\limsup_{m\to\infty}\frac{\log_2\chi(T^{\otimes m})}{m},
+\]
+the best published upper bound is $\alpha\le\log_2(3)/4\approx0.3963$, obtained by
+Qassim, Pashayan and Gosset \cite{QPG2021} (see also \cite[Thm.~11]{QassimThesis}) from
+the single inequality $\chi(\cat_6)\le3$ together with a contraction scheme that glues
+six-qubit cat states along a tree. The exponent is exactly
+$\log_2\chi(\cat_6)/(6-2)$: each vertex of the tree costs a factor $\chi(\cat_6)$ and
+yields four fresh qubits of cat.
+
+Qassim observed that this exponent is unlikely to be tight, for a structural reason:
+plugging \emph{two} copies of $\cat_6$ into the same scheme costs
+$\chi(\cat_6^{\otimes2})$ rather than $\chi(\cat_6)^2=9$, and equality
+$\chi(\cat_6^{\otimes2})=9$ would make $\cat_6$ the first known example of a state with
+multiplicative stabilizer rank. This is \cite[Eq.~(4.30)]{QassimThesis}:
+
+\begin{conjecture}[Qassim]\label{conj:main}
+$\chi(\cat_6\otimes\cat_6)\le 8$.
+\end{conjecture}
+
+\noindent Conjecture~\ref{conj:main} would give
+$\alpha\le\log_2(8)/8=3/8=0.375$ \cite[Eq.~(4.31)]{QassimThesis}. The hypothesis is not
+idle: Lovitz and Steffan \cite{LovitzSteffan2022} later produced the first states with
+multiplicative rank, namely two-qubit states $\psi_\zeta$, depending on a parameter $\zeta\in\C^\times$, with
+$\chi(\psi_\zeta)=2$ and $\chi(\psi_\zeta^{\otimes2})=4$; but their proof works only for
+$\zeta$ outside a finite exceptional set, in particular for $\zeta$ transcendental over
+$\Q$, and the
+cat state's amplitudes are algebraic. So the question is genuinely open in both
+directions.
+
+\subsection{Results}
+
+Throughout, $\ket{C}:=\ket{\cat_6}$ (unnormalized; see Section~\ref{sec:prelim}).
+Our proved numerical result is the following.
+
+\begin{theorem}\label{thm:main}
+$3\le\chi(C\otimes C)\le9$.
+\end{theorem}
+
+\noindent Neither bound is new in substance --- the upper bound is the trivial
+submultiplicative one and the lower bound follows from $\chi(\cat_6)=3$ --- but both are
+proved here in full, and the proofs are the scaffolding for everything else. The
+substantive content of this note is a set of exact reductions and rigidity theorems.
+We single out four.
+
+\begin{theorem}[Compression; Theorem~\ref{thm:compress}]\label{thm:introcompress}
+There is a CNOT circuit $U_\Phi$ on six qubits with
+$U_\Phi\ket{C}=\sqrt2\,\ket{0}\otimes\ket{\widehat C}$, where $\ket{\widehat C}$ is the
+\emph{full-support} five-qubit state
+$\ket{\widehat C}=\sum_{y\in\F_2^5}i^{\lceil \wt{y}/2\rceil}\ket{y}$. Consequently
+$\chi(C\otimes C)=\chi(\widehat C\otimes\widehat C)$, and
+$\ket{\widehat C}=2\ket{w_2}-\ket{d}$ where $\ket{w_2}=\ket{0^5}-i\ket{1^5}$ is a
+stabilizer state and $\ket{d}=\sum_y i^{-\qq(y)}\ket y$ has $\chi(d)=2$. In particular
+\[
+\chi(C\otimes C)\;\le\;5+\chi(d\otimes d),
+\]
+so $\chi(d^{\otimes2})\le3$ would prove Conjecture~\ref{conj:main}.
+\end{theorem}
+
+\begin{theorem}[Product-cut obstruction; Propositions~\ref{prop:indep} and \ref{prop:sylvester}]
+Suppose $C\otimes C=\sum_{j=1}^k c_j\ket{\xi_j}\otimes\ket{\eta_j}$ with all
+$\xi_j,\eta_j$ six-qubit stabilizer states. If the pairwise non-proportional
+$\xi_j$ are linearly independent, then $k\ge9$; the same holds with the two tensor
+factors exchanged. Without any independence hypothesis, the ranks
+$r=\rank(\xi_1,\dots,\xi_k)$ and $r'=\rank(\eta_1,\dots,\eta_k)$ satisfy
+$r,r'\ge3$ and $r+r'\le k+1$.
+\end{theorem}
+
+\begin{theorem}[Plane rigidity; Theorems~\ref{thm:plane} and \ref{thm:squareplane}]
+Let $\ket{w_0}=\sum_y\ket y$ and $\ket{w_1}=\sum_y(-1)^{\qq(y)}\ket y$. The only
+stabilizer rays in $\spn\{w_0,w_1\}$ are $[w_0]$ and $[w_1]$; and the only stabilizer
+rays in the four-dimensional space $\spn\{w_a\otimes w_b\}_{a,b\in\{0,1\}}$ are the four
+product rays $[w_a\otimes w_b]$. Since $d\otimes d$ has all four coordinates nonzero in
+that basis, no three-term decomposition of $d\otimes d$ can use only stabilizer states
+from that plane.
+\end{theorem}
+
+\begin{theorem}[Two-sided sandwich; Theorem~\ref{thm:sandwich}]
+$\chi(\cat_{10})\le\chi(C\otimes C)\le\chi(\cat_{12})$.
+\end{theorem}
+
+We also prove that a single entangled stabilizer slice of $d\otimes d$ does exist (the
+graph $z=y+\one_5$, on which the phase of $d\otimes d$ is constant), that the natural
+$64$-point maximal-isotropic enlargement of that slice is \emph{not} a stabilizer state,
+and that excluding $\chi(d^{\otimes2})\le3$ reduces to two finite tasks
+(Proposition~\ref{prop:reduction}).
+
+\subsection{What is not proved}
+
+We do not prove Conjecture~\ref{conj:main}, and we do not refute it. We also do not
+improve the lower bound past $3$. Section~\ref{sec:open} states the three remaining gaps
+precisely and records the search strategies that were tried and failed, so that the
+reader does not repeat them.
+
+\subsection{Organisation}
+
+Section~\ref{sec:prelim} fixes notation and proves the elementary facts about stabilizer
+rank and about phase exponents that the rest of the note uses; a reader familiar with
+the affine-quadratic normal form may skim it, but the difference calculus of
+Section~\ref{sec:diffcalc} is used repeatedly and is worth reading. Section~\ref{sec:three}
+proves the three-term decomposition of $C$. Section~\ref{sec:compress} proves the
+compression theorem. Section~\ref{sec:upper} gives the upper bound and the reduction to
+$d^{\otimes2}$. Section~\ref{sec:cut} proves the product-cut obstructions.
+Section~\ref{sec:rigid} contains the rigidity theorems. Section~\ref{sec:lower} proves
+the lower bound and the sandwich. Section~\ref{sec:open} discusses what remains.
+
+\section{Preliminaries}\label{sec:prelim}
+
+\subsection{Notation}
+
+We work over $\F_2=\{0,1\}$ and $\Z_4=\Z/4\Z$. Addition in $\F_2^n$ is written $+$ and
+is bitwise; when a bit string is used inside an integer expression, its entries are
+read as the integers $0$ and $1$. For $x\in\F_2^n$, $\wt{x}=\sum_j x_j\in\Z$ is the
+Hamming weight. We write $\one_n=(1,1,\dots,1)\in\F_2^n$, $e_j$ for the $j$-th standard
+basis vector, and $0^n$ for the zero string. An \emph{affine subspace}
+$\mathcal A\subseteq\F_2^n$ is a coset $x_0+\mathcal A_0$ of a linear subspace
+$\mathcal A_0$, called the \emph{direction space} of $\mathcal A$; $\dim\mathcal A:=\dim\mathcal A_0$.
+An \emph{affine hyperplane} is an affine subspace of dimension $n-1$; equivalently a set
+$\{x:v\cdot x=\epsilon\}$ for some $v\in\F_2^n\setminus\{0\}$ and $\epsilon\in\F_2$,
+where $v\cdot x=\sum_j v_jx_j \bmod 2$.
+
+Set $\omega:=e^{i\pi/4}$, so $\omega^2=i$ and $\omega^4=-1$. Let
+\[
+\Ev_n:=\{x\in\F_2^n:\wt{x}\equiv0\ (\mathrm{mod}\ 2)\}
+\]
+be the even-weight code, a linear subspace of dimension $n-1$. Define the two Boolean
+quadratics that occur throughout:
+\begin{align}
+\sigma_n(x)&:=\sum_{1\le j<k\le n}x_jx_k \bmod 2 \qquad (x\in\F_2^n),\label{eq:sigma}\\
+\qq(y)&:=\sigma_5(y)+\wt{y} \bmod 2 \qquad (y\in\F_2^5).\label{eq:qdef}
+\end{align}
+A short computation records the only properties of $\sigma_n$ we need.
+
+\begin{lemma}\label{lem:sigma}
+$\sigma_n(x)=\binom{\wt x}{2}\bmod 2$. Consequently $\sigma_6$ takes the values
+$0,1,0,1$ on strings of weight $0,2,4,6$, and $\qq(y)$ depends only on $\wt y$,
+taking the values $0,1,1,0,0,1$ for $\wt y=0,1,2,3,4,5$.
+\end{lemma}
+
+\begin{proof}
+$\sigma_n(x)$ counts the pairs $\{j,k\}$ with $x_j=x_k=1$, of which there are
+$\binom{\wt x}{2}$. The two tables follow by evaluating
+$\binom{w}{2}$ and $\binom w2+w$ modulo $2$.
+\end{proof}
+
+Vectors are unnormalized unless stated otherwise; $\ket\psi$ and $\lambda\ket\psi$
+($\lambda\ne0$) denote the same \emph{ray} $[\psi]$. For a vector $\ket\psi$ on $n$
+qubits, its \emph{support} is $\{x\in\F_2^n:\braket{x|\psi}\ne0\}$.
+
+\subsection{Stabilizer states, stabilizer rank, phase exponents}
+
+\begin{definition}[Stabilizer state]\label{def:stab}
+A nonzero vector $\ket\varphi\in(\C^2)^{\otimes n}$ is a \emph{stabilizer state} if
+\begin{equation}\label{eq:normalform}
+\ket\varphi=\kappa\sum_{x\in\mathcal A}i^{\ell(x)}(-1)^{\theta(x)}\ket x
+\end{equation}
+for some $\kappa\in\C^\times$, some affine subspace $\mathcal A\subseteq\F_2^n$, and,
+in some affine parametrization $x=x_0+Mt$ of $\mathcal A$ by $t\in\F_2^{\delta}$
+($\delta=\dim\mathcal A$, $M$ injective and $\F_2$-linear), functions
+$\ell(x_0+Mt)=\sum_{j=1}^{\delta}\ell_jt_j$ with $\ell_j\in\Z_4$, and $\theta$ a quadratic
+polynomial over $\F_2$ in $t$. We write $\Stab_n$ for the set of stabilizer states.
+This is the standard affine-quadratic normal form; it agrees with the definition of a
+stabilizer state as an element of the Clifford orbit of $\ket{0^n}$
+\cite{DehaeneDeMoor2003,VandenNest2010}.
+\end{definition}
+
+It is convenient to fold the two phase factors together.
+
+\begin{definition}[Phase exponent]\label{def:exponent}
+Let $\ket\varphi$ be a nonzero vector supported on an affine subspace $\mathcal A$
+whose nonzero amplitudes all have the same modulus and lie in
+$\kappa\{1,i,-1,-i\}$ for some $\kappa\in\C^\times$. A \emph{phase exponent} of
+$\ket\varphi$ is a function $h:\mathcal A\to\Z_4$ with
+$\braket{x|\varphi}=\kappa\, i^{h(x)}$ for all $x\in\mathcal A$. It is unique once
+$\kappa$ is fixed, and unique up to an additive constant otherwise; in particular all
+differences of $h$ are determined by $\ket\varphi$ alone.
+\end{definition}
+
+With $h=\ell+2\theta$, \eqref{eq:normalform} reads
+$\ket\varphi=\kappa\sum_{x\in\mathcal A}i^{h(x)}\ket x$. The next lemma says that the
+shape ``$\Z_4$-linear plus twice quadratic'' is a property of $h$, not of the chosen
+affine coordinates. We use it silently thereafter.
+
+\begin{lemma}[Coordinate independence]\label{lem:coordfree}
+Let $\mathcal A$ be an affine subspace with two affine parametrizations
+$t\mapsto x_0+Mt$ and $s\mapsto x_0'+M's$, related by $t=Ns+t_0$ with $N$ invertible
+over $\F_2$. If $H(t)=\sum_j\ell_jt_j+2\theta(t)$ with $\ell_j\in\Z_4$ and $\theta$
+quadratic over $\F_2$, then $H(Ns+t_0)$ has the same shape in $s$.
+\end{lemma}
+
+\begin{proof}
+For bits $u_1,\dots,u_N\in\{0,1\}$ one has, as integers,
+$u_1\oplus\dots\oplus u_N=\sum_i u_i-2\varepsilon_2(u)+4(\cdots)$, where
+$\varepsilon_2(u)=\sum_{i<i'}u_iu_{i'}$; hence modulo $4$,
+$u_1\oplus\cdots\oplus u_N\equiv\sum_iu_i+2\varepsilon_2(u)$. Applying this to
+$t_j=(Ns+t_0)_j$, which is an $\F_2$-sum of some of the $s_k$ and the constant
+$(t_0)_j$, gives
+$\ell_jt_j\equiv \ell_j\big(\text{$\Z$-linear in }s\big)+2\big(\ell_j\bmod 2\big)e_2(\cdot)\pmod 4$,
+and $\varepsilon_2(\cdot)$ is a quadratic polynomial over $\F_2$. Finally an affine substitution
+carries a quadratic polynomial over $\F_2$ to a quadratic polynomial, so
+$2\theta(Ns+t_0)=2\theta'(s)$ with $\theta'$ quadratic.
+\end{proof}
+
+\begin{definition}[Stabilizer rank]\label{def:chi}
+For a nonzero $\ket\psi\in(\C^2)^{\otimes n}$,
+\[
+\chi(\psi):=\min\Big\{k\ \Big|\ \ket\psi=\sum_{j=1}^k c_j\ket{\varphi_j},\
+c_j\in\C,\ \ket{\varphi_j}\in\Stab_n\Big\}.
+\]
+\end{definition}
+
+Since $\chi$ is defined by a span condition it depends only on the ray $[\psi]$, and
+we may and do take all stabilizer states in a decomposition to be pairwise
+non-proportional (proportional ones may be merged).
+
+\begin{lemma}[Elementary operations]\label{lem:ops}
+Let $\ket\psi,\ket\phi$ be nonzero states, $\lambda\in\C^\times$, $U$ a Clifford
+unitary, and $\ket\tau$ a stabilizer state. Then
+\begin{enumerate}[label=(\alph*)]
+\item $\chi(\lambda\psi)=\chi(\psi)$ and $\chi(U\psi)=\chi(\psi)$;
+\item $\chi(\psi\otimes\tau)=\chi(\psi)$;
+\item $\chi(\psi\otimes\phi)\le\chi(\psi)\chi(\phi)$;
+\item if $P$ is a Pauli operator with $P^2=I$ and $\Pi=\tfrac12(I+P)$, then
+$\Pi\ket\psi=0$ or $\chi(\Pi\psi)\le\chi(\psi)$;
+\item if $\ket\tau$ is a stabilizer state on a subset $S$ of the qubits and
+$\ket{\psi'}:=(\mathrm{id}_{S^c}\otimes\bra\tau)\ket\psi$ is nonzero, then
+$\chi(\psi')\le\chi(\psi)$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(a) Cliffords permute $\Stab_n$ and scaling does not change spans.
+
+(c) If $\psi=\sum_ia_i\varphi_i$ and $\phi=\sum_jb_j\varphi_j'$ then
+$\psi\otimes\phi=\sum_{i,j}a_ib_j\,\varphi_i\otimes\varphi_j'$, and a tensor product of
+stabilizer states is a stabilizer state: its support is the Cartesian product
+$\mathcal A\times\mathcal A'$, again affine, and in the concatenated affine coordinates
+its phase exponent is $h(t)+h'(t')$, again of the shape of
+Definition~\ref{def:stab}.
+
+(b) ``$\le$'' is (c) with $\chi(\tau)=1$. For ``$\ge$'', let
+$\psi\otimes\tau=\sum_jc_j\varphi_j$ be a minimal decomposition and contract the second
+factor with $\bra\tau$: since $\braket{\tau|\tau}\ne0$ we get
+$\braket{\tau|\tau}\ket\psi=\sum_jc_j(\mathrm{id}\otimes\bra\tau)\ket{\varphi_j}$, and by
+(e) below each term is zero or a multiple of a stabilizer state.
+
+(d) Every Pauli $P$ with $P^2=I$ satisfies $P=\pm U Z_1U^\dagger$ for some Clifford $U$,
+so by (a) we may assume $\Pi=\frac12(I\pm Z_1)$, i.e.\ $\Pi$ restricts the support to
+the affine hyperplane $\{x_1=\epsilon\}$. If $\ket\varphi$ is a stabilizer state with
+support $\mathcal A$ and phase exponent $h$, then $\Pi\ket\varphi$ has support
+$\mathcal A\cap\{x_1=\epsilon\}$, which is empty or affine, and phase exponent the
+restriction of $h$, which retains the shape of Definition~\ref{def:stab} by
+Lemma~\ref{lem:coordfree} applied to any affine parametrization of the intersection.
+Applying $\Pi$ to a $\chi(\psi)$-term decomposition of $\psi$ therefore yields at most
+$\chi(\psi)$ terms.
+
+(e) Write $\ket\tau=W\ket{0^{|S|}}$ for a Clifford $W$ on $S$; then
+$\bra\tau=\bra{0^{|S|}}W^\dagger$, so by (a) we may assume $\ket\tau=\ket{0^{|S|}}$.
+Contraction with $\bra{0^{|S|}}$ is the composition of the Pauli projections
+$\frac12(I+Z_j)$, $j\in S$, of (d) with the deletion of the (now product) qubits in
+$S$, and deletion of a tensor factor equal to $\ket{0}$ does not change stabilizer
+rank by (b).
+\end{proof}
+
+\subsection{A difference calculus for phase exponents}\label{sec:diffcalc}
+
+The single tool used to \emph{exclude} stabilizer states below is the following
+elementary calculus. For $a\in\mathcal A_0$ define the difference operator
+\[
+(\Delta_a h)(x):=h(x+a)-h(x)\in\Z_4,\qquad x\in\mathcal A,
+\]
+and iterate, so that
+$(\Delta_a\Delta_bh)(x)=h(x+a+b)-h(x+a)-h(x+b)+h(x)$.
+
+For a quadratic polynomial $\theta$ over $\F_2$ let
+$\pol_\theta(a,b):=\theta(a+b)+\theta(a)+\theta(b)+\theta(0)$ denote its
+\emph{polar form}; it is symmetric, $\F_2$-bilinear, alternating
+($\pol_\theta(a,a)=0$), and independent of any base point.
+
+\begin{lemma}[Difference calculus]\label{lem:diff}
+Let $\ket\varphi$ be a stabilizer state with support $\mathcal A$, direction space
+$\mathcal A_0$ and phase exponent $h$. Then there is a symmetric $\F_2$-bilinear form
+$\Lambda$ on $\mathcal A_0$ such that for all $x\in\mathcal A$ and all
+$a,b\in\mathcal A_0$,
+\begin{equation}\label{eq:secondiff}
+(\Delta_a\Delta_bh)(x)\equiv 2\,\Lambda(a,b) \pmod 4 .
+\end{equation}
+In particular:
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{(parity)} every mixed second difference of $h$ is even;
+\item \textbf{(base-point freedom)} every mixed second difference of $h$ is independent
+of the base point $x$; equivalently every third difference
+$\Delta_a\Delta_b\Delta_ch$ vanishes in $\Z_4$;
+\item \textbf{(reduction mod $2$)} $h\bmod2$ is an $\F_2$-affine function on $\mathcal A$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+Choose affine coordinates $x=x_0+Mt$ as in Definition~\ref{def:stab}, so that
+$H(t):=h(x_0+Mt)=\sum_j\ell_jt_j+2\theta(t)$; by Lemma~\ref{lem:coordfree} nothing
+depends on the choice. Let $a=Ma'$, $b=Mb'$.
+
+For a single coordinate, the map $t_j\mapsto \ell_jt_j$ has second difference
+\[
+\ell_j\big[(t_j\oplus a_j'\oplus b_j')-(t_j\oplus a_j')-(t_j\oplus b_j')+t_j\big].
+\]
+The bracket vanishes unless $a_j'=b_j'=1$, in which case it equals
+$t_j-2(1-t_j)+t_j=4t_j-2\equiv2\pmod4$. Hence
+\[
+\Delta_{a'}\Delta_{b'}\Big(\sum_j\ell_jt_j\Big)\equiv 2\sum_j\ell_ja_j'b_j'\pmod4 ,
+\]
+which is independent of $t$. For the quadratic part,
+\[
+\Delta_{a'}\Delta_{b'}\big(2\theta\big)(t)=2\big[\theta(t+a'+b')-\theta(t+a')-\theta(t+b')+\theta(t)\big]
+\equiv 2\pol_\theta(a',b')\pmod 4 ,
+\]
+again independent of $t$, since the bracket reduces modulo $2$ to the polar form of a
+quadratic. Adding the two contributions gives \eqref{eq:secondiff} with
+$\Lambda(a,b)=\sum_j\bar\ell_ja_j'b_j'+\pol_\theta(a',b')$ where
+$\bar\ell_j=\ell_j\bmod2$; this is symmetric and $\F_2$-bilinear.
+
+(i) and (ii) are immediate from \eqref{eq:secondiff}. For (iii), reduce
+$H=\sum_j\ell_jt_j+2\theta$ modulo $2$ to get $\sum_j\bar\ell_jt_j$, an $\F_2$-linear
+function of $t$, hence an $\F_2$-affine function of $x$ on $\mathcal A$.
+\end{proof}
+
+\begin{corollary}[Non-stabilizer test]\label{cor:test}
+Let $\ket\psi$ be supported on an affine subspace $\mathcal A$ with all amplitudes of
+equal modulus, and let $h$ be a phase exponent. If either
+\begin{enumerate}[label=(\alph*)]
+\item some mixed second difference $(\Delta_a\Delta_bh)(x)$ is odd, or
+\item some mixed second difference $(\Delta_a\Delta_bh)(x)$ depends on $x$,
+\end{enumerate}
+then $\ket\psi$ is not a stabilizer state.
+\end{corollary}
+
+\begin{proof}
+Immediate from Lemma~\ref{lem:diff}(i)--(ii); the differences of $h$ do not depend on
+the choice of $h$ (Definition~\ref{def:exponent}).
+\end{proof}
+
+Finally we record the isotropy bound used in Section~\ref{sec:rigid}.
+
+\begin{lemma}[Isotropy bound]\label{lem:isotropy}
+Let $\bb$ be an alternating $\F_2$-bilinear form on $V=\F_2^N$ with radical
+$\mathcal R=\{v:\bb(v,\cdot)=0\}$ of dimension $\rho$. Then every totally isotropic
+subspace $\mathcal W\subseteq V$ (i.e.\ $\bb|_{\mathcal W\times\mathcal W}=0$) satisfies
+\[
+\dim\mathcal W\le \rho+\tfrac{N-\rho}{2}.
+\]
+\end{lemma}
+
+\begin{proof}
+$\bb$ descends to a nondegenerate alternating form on $V/\mathcal R$, of even dimension
+$N-\rho$, in which a totally isotropic subspace has dimension at most $(N-\rho)/2$.
+The image of $\mathcal W$ in $V/\mathcal R$ is totally isotropic, and
+$\dim\mathcal W\le\dim(\mathcal W\cap\mathcal R)+\dim(\mathcal W+\mathcal R)/\mathcal R
+\le\rho+(N-\rho)/2$.
+\end{proof}
+
+\subsection{Magic states and cat states}
+
+\begin{definition}\label{def:T}
+Put $\ket T:=\ket0+\omega\ket1$ and $\ket{T^\perp}:=\ket0-\omega\ket1=Z\ket T$; these
+are unnormalized and orthogonal. For $n\ge1$,
+\[
+\ket{\cat_n}:=\tfrac1{\sqrt2}\big(\ket T^{\otimes n}+\ket{T^\perp}^{\otimes n}\big),
+\qquad \ket C:=\ket{\cat_6}.
+\]
+\end{definition}
+
+Normalization conventions differ across the literature: \cite{QPG2021} uses the unit
+vector $2^{-1/2}(\ket0+\omega\ket1)$, so that its cat state is a fixed nonzero multiple
+of ours. By Lemma~\ref{lem:ops}(a) this is immaterial for stabilizer rank, and we use
+the cited values without further comment.
+
+\begin{lemma}[Amplitudes of the cat state]\label{lem:catamp}
+\begin{equation}\label{eq:catamp}
+\ket C=\sqrt2\sum_{x\in\Ev_6}\omega^{\wt x}\ket x .
+\end{equation}
+More generally $\ket{\cat_n}=\sqrt2\sum_{x\in\Ev_n}\omega^{\wt x}\ket x$.
+\end{lemma}
+
+\begin{proof}
+$\ket T^{\otimes n}=\sum_{x\in\F_2^n}\omega^{\wt x}\ket x$ and
+$\ket{T^\perp}^{\otimes n}=\sum_x(-1)^{\wt x}\omega^{\wt x}\ket x$, so the sum has
+amplitude $\omega^{\wt x}(1+(-1)^{\wt x})$, which is $2\omega^{\wt x}$ for even
+$\wt x$ and $0$ otherwise. Divide by $\sqrt2$.
+\end{proof}
+
+We shall use the following two facts from the literature.
+
+\begin{theorem}[{\cite[\S4.2]{QassimThesis}, \cite{QPG2021}}]\label{thm:cited}
+$\chi(\cat_6)=3$. The upper bound $\chi(\cat_6)\le3$ is
+\cite[\S4.2]{QassimThesis} and is reproved from scratch in
+Theorem~\ref{thm:threeterm} below. The lower bound is proved in the appendix of
+\cite{QPG2021} in the form $\chi(\cat_6)\ge\chi(\cat_5)\ge3$, by classifying pairs of
+stabilizer states up to a Clifford into a canonical form and comparing Pauli spectra;
+we use it as a citation and do not reproduce that finite case analysis.
+\end{theorem}
+
+\section{An exact three-term decomposition of the cat state}\label{sec:three}
+
+Define three vectors on six qubits:
+\begin{equation}\label{eq:phis}
+\ket{\varphi_1}:=\ket{0^6}-i\ket{1^6},\qquad
+\ket{\varphi_2}:=\sum_{x\in\Ev_6}\ket x,\qquad
+\ket{\varphi_3}:=\sum_{x\in\Ev_6}(-1)^{\sigma_6(x)}\ket x ,
+\end{equation}
+with $\sigma_6$ as in \eqref{eq:sigma}, and three scalars
+\begin{equation}\label{eq:as}
+a_1:=2\sqrt2,\qquad a_2:=\frac{-1+i}{\sqrt2},\qquad a_3:=\frac{-1-i}{\sqrt2}.
+\end{equation}
+
+\begin{lemma}\label{lem:phistab}
+$\ket{\varphi_1},\ket{\varphi_2},\ket{\varphi_3}$ are stabilizer states.
+\end{lemma}
+
+\begin{proof}
+For $\ket{\varphi_1}$: the support is the repetition code
+$\mathcal A=\{0^6,\one_6\}$, a linear subspace of dimension $1$, parametrized by
+$x=t\one_6$, $t\in\F_2$. The amplitudes are $1$ and $-i=i^3$, so
+$h(t)=3t$ is $\Z_4$-linear and \eqref{eq:normalform} holds with $\theta=0$,
+$\kappa=1$.
+
+For $\ket{\varphi_2}$ and $\ket{\varphi_3}$: the support is $\Ev_6$, a linear subspace
+of dimension $5$, parametrized by $t\in\F_2^5\mapsto x=(t_1+\dots+t_5,t_1,\dots,t_5)$.
+The phase exponents are $h=0$ and $h=2\sigma_6$ respectively, and $\sigma_6$ restricted
+to $\Ev_6$ is a quadratic polynomial in $t$ (substituting an affine expression into a
+quadratic gives a quadratic).
+\end{proof}
+
+\begin{theorem}[Three-term decomposition]\label{thm:threeterm}
+\begin{equation}\label{eq:threeterm}
+\ket C=a_1\ket{\varphi_1}+a_2\ket{\varphi_2}+a_3\ket{\varphi_3}
+=2\sqrt2\,\ket{\varphi_1}+\frac{-1+i}{\sqrt2}\ket{\varphi_2}+\frac{-1-i}{\sqrt2}\ket{\varphi_3}.
+\end{equation}
+In particular $\chi(C)\le3$, and by Theorem~\ref{thm:cited}, $\chi(C)=3$.
+\end{theorem}
+
+\begin{proof}
+Both sides vanish on odd-weight strings by \eqref{eq:catamp} and \eqref{eq:phis}, so it
+suffices to compare amplitudes at $x\in\Ev_6$. By Lemma~\ref{lem:sigma},
+$(-1)^{\sigma_6(x)}$ equals $+1,-1,+1,-1$ according as $\wt x=0,2,4,6$; and
+$\ket{\varphi_1}$ contributes only at $\wt x\in\{0,6\}$. Using
+$a_2+a_3=-\sqrt2$ and $a_2-a_3=i\sqrt2$, the right-hand side has amplitudes
+\[
+\begin{array}{c|c|c}
+\wt x & \text{amplitude of }a_1\varphi_1+a_2\varphi_2+a_3\varphi_3 & \sqrt2\,\omega^{\wt x}\\ \hline
+0 & a_1+a_2+a_3=2\sqrt2-\sqrt2=\sqrt2 & \sqrt2\\
+2 & a_2-a_3=i\sqrt2 & \sqrt2\,\omega^2=i\sqrt2\\
+4 & a_2+a_3=-\sqrt2 & \sqrt2\,\omega^4=-\sqrt2\\
+6 & -ia_1+a_2-a_3=-2\sqrt2\,i+\sqrt2\,i=-i\sqrt2 & \sqrt2\,\omega^6=-i\sqrt2 .
+\end{array}
+\]
+The two columns agree, which by \eqref{eq:catamp} proves \eqref{eq:threeterm}.
+\end{proof}
+
+\begin{lemma}\label{lem:phiindep}
+$\ket{\varphi_1},\ket{\varphi_2},\ket{\varphi_3}$ are linearly independent.
+\end{lemma}
+
+\begin{proof}
+Suppose $\lambda_1\varphi_1+\lambda_2\varphi_2+\lambda_3\varphi_3=0$. Evaluating at a
+string of weight $2$ gives $\lambda_2-\lambda_3=0$ and at a string of weight $4$ gives
+$\lambda_2+\lambda_3=0$, so $\lambda_2=\lambda_3=0$; then evaluating at $0^6$ gives
+$\lambda_1=0$.
+\end{proof}
+
+\section{Clifford compression to five qubits}\label{sec:compress}
+
+The cat state is supported on the even-weight code, which is a hyperplane; a CNOT
+circuit therefore compresses it to a full-support state on five qubits. Making this
+explicit removes a redundant qubit from every statement below and turns the target of
+Conjecture~\ref{conj:main} into a full-support ten-qubit problem.
+
+Let $\Phi:\F_2^6\to\F_2^6$ be the invertible $\F_2$-linear map
+\begin{equation}\label{eq:Phi}
+\Phi(x_1,\dots,x_6)=(p,y_1,\dots,y_5):=(x_1+\dots+x_6,\ x_2,\dots,x_6),
+\end{equation}
+with inverse $\Phi^{-1}(p,y)=(p+y_1+\dots+y_5,y_1,\dots,y_5)$, and let $U_\Phi$ be the
+unitary permuting the computational basis by $\ket x\mapsto\ket{\Phi(x)}$. Since $\Phi$
+is $\F_2$-linear and invertible, $U_\Phi$ is a product of CNOT gates, hence Clifford.
+Note $x\in\Ev_6\iff p=0$.
+
+\begin{lemma}\label{lem:sigmaq}
+For $x\in\Ev_6$ with $\Phi(x)=(0,y)$ we have $\sigma_6(x)=\qq(y)$, with $\qq$ as in
+\eqref{eq:qdef}.
+\end{lemma}
+
+\begin{proof}
+Write $n:=\wt y\in\{0,\dots,5\}$. On $\Ev_6$ we have $x_1=y_1+\dots+y_5=n\bmod2$ and
+$x_{j+1}=y_j$, so $\wt x=n+(n\bmod 2)$. By Lemma~\ref{lem:sigma},
+$\sigma_6(x)=\binom{\wt x}2\bmod2$ and $\qq(y)=\binom n2+n\bmod2$. If $n$ is even then
+$\wt x=n$ and both sides equal $\binom n2$. If $n$ is odd then $\wt x=n+1$ and
+$\binom{n+1}2=\binom n2+n$, as required.
+\end{proof}
+
+Define, on five qubits,
+\begin{align}
+\ket{w_0}&:=\sum_{y\in\F_2^5}\ket y, &
+\ket{w_1}&:=\sum_{y\in\F_2^5}(-1)^{\qq(y)}\ket y, &
+\ket{w_2}&:=\ket{0^5}-i\ket{1^5},\label{eq:ws}\\
+\ket d&:=\sum_{y\in\F_2^5}i^{-\qq(y)}\ket y, &
+\ket{\widehat C}&:=\sum_{y\in\F_2^5}i^{\lceil \wt y/2\rceil}\ket y. & &
+\label{eq:dC}
+\end{align}
+Here $\qq(y)\in\{0,1\}$ is read as an integer in the exponent. The vectors
+$\ket{w_0},\ket{w_1},\ket{w_2}$ are stabilizer states, by the same argument as
+Lemma~\ref{lem:phistab}: $\ket{w_0},\ket{w_1}$ have full (hence affine) support with
+phase exponents $0$ and $2\qq$, and $\ket{w_2}$ has support $\{0^5,\one_5\}$ with
+exponent $3t$.
+
+\begin{theorem}[Compression]\label{thm:compress}
+\begin{equation}\label{eq:compress}
+U_\Phi\ket{\varphi_1}=\ket0\otimes\ket{w_2},\quad
+U_\Phi\ket{\varphi_2}=\ket0\otimes\ket{w_0},\quad
+U_\Phi\ket{\varphi_3}=\ket0\otimes\ket{w_1},\quad
+U_\Phi\ket{C}=\sqrt2\,\ket0\otimes\ket{\widehat C},
+\end{equation}
+and
+\begin{equation}\label{eq:Chat}
+\ket{\widehat C}=2\ket{w_2}-\ket d,\qquad
+\ket d=\frac{1-i}{2}\big(\ket{w_0}+i\ket{w_1}\big).
+\end{equation}
+Consequently
+\begin{equation}\label{eq:chieq}
+\chi(C)=\chi(\widehat C)=3,\qquad
+\chi(C\otimes C)=\chi(\widehat C\otimes\widehat C).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+The first three identities in \eqref{eq:compress} are immediate:
+$\Phi(0^6)=(0,0^5)$ and $\Phi(\one_6)=(0,\one_5)$, giving $\ket{w_2}$; and $\Phi$ maps
+$\Ev_6$ bijectively onto $\{0\}\times\F_2^5$, carrying the phase $1$ to $1$ and, by
+Lemma~\ref{lem:sigmaq}, the phase $(-1)^{\sigma_6}$ to $(-1)^{\qq}$.
+
+For the fourth, let $x\in\Ev_6$ with $\Phi(x)=(0,y)$ and $n=\wt y$. As in the proof of
+Lemma~\ref{lem:sigmaq}, $\wt x=n+(n\bmod2)=2\lceil n/2\rceil$, so by \eqref{eq:catamp}
+the amplitude of $\ket C$ at $x$ is
+$\sqrt2\,\omega^{2\lceil n/2\rceil}=\sqrt2\,i^{\lceil n/2\rceil}$, which is
+$\sqrt2$ times the amplitude of $\ket{\widehat C}$ at $y$.
+
+For \eqref{eq:Chat}: the amplitude of $\ket d$ is $1$ where $\qq=0$ and $i^{-1}=-i$
+where $\qq=1$; the vector $\frac{1-i}2(w_0+iw_1)$ has amplitude
+$\frac{1-i}2(1+i)=1$ where $\qq=0$ and $\frac{1-i}{2}(1-i)=-i$ where $\qq=1$. For the
+first identity of \eqref{eq:Chat}, compare $2w_2-d$ with $\widehat C$ at each $y$,
+using Lemma~\ref{lem:sigma} for the values of $\qq$:
+for $y\notin\{0^5,\one_5\}$ we need $i^{\lceil n/2\rceil}=-i^{-\qq(y)}$ with $n=\wt y$, i.e.\
+$\lceil n/2\rceil\equiv2-\qq(y)\pmod4$, which holds since
+$(\lceil n/2\rceil,\qq)=(1,1),(1,1),(2,0),(2,0)$ for $n=1,2,3,4$; at $y=0^5$ the left
+side is $i^0=1$ and the right side is $2-1=1$; at $y=\one_5$ the left side is
+$i^3=-i$ and the right side is $-2i-i^{-1}=-2i+i=-i$.
+
+Finally \eqref{eq:chieq} follows from Lemma~\ref{lem:ops}(a),(b): $U_\Phi$ is Clifford
+and $\ket 0$ is a stabilizer state, so
+$\chi(C)=\chi(U_\Phi C)=\chi(\ket0\otimes\widehat C)=\chi(\widehat C)$; the value $3$
+is Theorem~\ref{thm:cited} together with Theorem~\ref{thm:threeterm}. Applying
+$U_\Phi\otimes U_\Phi$ and deleting the two ancillary qubits gives the second identity.
+\end{proof}
+
+\begin{remark}
+Combining \eqref{eq:compress} with \eqref{eq:threeterm} recovers the three-term
+decomposition in compressed form:
+$\ket{\widehat C}=2\ket{w_2}+\frac{-1+i}{2}\ket{w_0}+\frac{-1-i}{2}\ket{w_1}$, which is
+\eqref{eq:Chat} expanded.
+\end{remark}
+
+\section{The upper bound, and reduction to a rank-two tensor square}\label{sec:upper}
+
+\begin{theorem}[Nine-term bound]\label{thm:nine}
+\begin{equation}\label{eq:nine}
+\ket C\otimes\ket C=\sum_{u,v\in\{1,2,3\}}a_ua_v\,\ket{\varphi_u}\otimes\ket{\varphi_v},
+\end{equation}
+an exact decomposition into nine linearly independent stabilizer states. Hence
+$\chi(C\otimes C)\le9$.
+\end{theorem}
+
+\begin{proof}
+Expand \eqref{eq:threeterm} in both factors. Each $\varphi_u\otimes\varphi_v$ is a
+stabilizer state by the argument in Lemma~\ref{lem:ops}(c). Independence: by
+Lemma~\ref{lem:phiindep} the family $\{\varphi_u\}$ is independent, and the set of
+pairwise tensor products of two independent families is independent.
+\end{proof}
+
+Independence of the nine summands says only that no term of \eqref{eq:nine} can be
+deleted; it is not an obstruction to an eight-term decomposition using different, and
+possibly entangled, stabilizer states. The next reduction isolates where such a saving
+could come from.
+
+\begin{theorem}[Reduction to $d^{\otimes2}$]\label{thm:reduce}
+With $\ket d$ as in \eqref{eq:dC},
+\begin{equation}\label{eq:reduce}
+\chi(C\otimes C)\ \le\ 5+\chi(d\otimes d).
+\end{equation}
+In particular $\chi(d^{\otimes2})\le3$ implies Conjecture~\ref{conj:main}, and
+$\chi(d^{\otimes2})=4$ recovers only the bound $9$.
+\end{theorem}
+
+\begin{proof}
+By \eqref{eq:chieq} it suffices to bound $\chi(\widehat C\otimes\widehat C)$. Using
+$\ket{\widehat C}=2\ket{w_2}-\ket d$,
+\[
+\ket{\widehat C}^{\otimes2}
+=4\,\ket{w_2}\otimes\ket{w_2}
+-2\big(\ket{w_2}\otimes\ket d+\ket d\otimes\ket{w_2}\big)
++\ket d\otimes\ket d .
+\]
+The first term is a single stabilizer state. Expanding $\ket d$ by \eqref{eq:Chat}
+turns each of the two mixed terms into two stabilizer states, e.g.
+$\ket{w_2}\otimes\ket d=\frac{1-i}2\big(\ket{w_2}\otimes\ket{w_0}
++i\,\ket{w_2}\otimes\ket{w_1}\big)$. This accounts for $1+2+2=5$ stabilizer states,
+and the last term costs $\chi(d\otimes d)$.
+\end{proof}
+
+\begin{lemma}\label{lem:chid}
+$\chi(d)=2$.
+\end{lemma}
+
+\begin{proof}
+$\chi(d)\le2$ by \eqref{eq:Chat}. For $\chi(d)\ge2$ we must show $\ket d$ is not a
+stabilizer state. It has full support $\F_2^5$ and phase exponent $h(y)=-\qq(y)\bmod 4$.
+By Lemma~\ref{lem:sigma}, $\qq(0)=0$, $\qq(e_1)=\qq(e_2)=1$ (weight $1$) and
+$\qq(e_1+e_2)=1$ (weight $2$), so
+\[
+(\Delta_{e_1}\Delta_{e_2}h)(0)=-\qq(e_1+e_2)+\qq(e_1)+\qq(e_2)-\qq(0)=-1+1+1-0=1,
+\]
+which is odd. Corollary~\ref{cor:test}(a) applies.
+\end{proof}
+
+Thus Conjecture~\ref{conj:main} would follow from the multiplicativity failure
+$\chi(d^{\otimes2})\le3$ for an explicit rank-two five-qubit state. This is exactly the
+regime in which Lovitz and Steffan \cite[Thm.~4.1]{LovitzSteffan2022} proved
+multiplicativity \emph{does} hold --- but only for two-qubit states $\psi_\zeta$ and
+only for $\zeta$ outside a finite exceptional set, in particular for $\zeta$
+transcendental over $\Q$. The amplitudes of $\ket d$ lie in $\Q(i)$, so their theorem
+gives no information here.
+
+\section{Obstructions for decompositions that are product across the cut}\label{sec:cut}
+
+Write $C\otimes C$ as a state on $6+6$ qubits and call the induced bipartition the
+\emph{$6\,|\,6$ cut}. This section shows that a hypothetical eight-term decomposition
+cannot consist of summands that are products across that cut in any ``generic'' way.
+Both statements are unconditional but neither constrains stabilizer states entangled
+across the cut, which are allowed in Definition~\ref{def:chi}; this is the reason they
+fall short of refuting Conjecture~\ref{conj:main}.
+
+\begin{proposition}[Independent factors force nine terms]\label{prop:indep}
+Suppose
+\begin{equation}\label{eq:prodcut}
+\ket C\otimes\ket C=\sum_{j=1}^kc_j\,\ket{\xi_j}\otimes\ket{\eta_j},
+\qquad \ket{\xi_j},\ket{\eta_j}\in\Stab_6,\ c_j\in\C^\times .
+\end{equation}
+Group the terms by proportionality of the left factors and let
+$\ket{\xi_{(1)}},\dots,\ket{\xi_{(m)}}$ be the resulting pairwise
+non-proportional left factors. If $\ket{\xi_{(1)}},\dots,\ket{\xi_{(m)}}$ are
+linearly independent, then $k\ge9$. The same conclusion holds with the roles of the two
+tensor factors exchanged.
+\end{proposition}
+
+\begin{proof}
+Let $G_p\subseteq\{1,\dots,k\}$ be the group of indices whose left factor is
+proportional to $\ket{\xi_{(p)}}$; absorbing the proportionality constants into the
+coefficients, \eqref{eq:prodcut} becomes
+\begin{equation}\label{eq:grouped}
+\ket C\otimes\ket C=\sum_{p=1}^m \ket{\xi_{(p)}}\otimes\ket{u_p},
+\qquad \ket{u_p}=\sum_{j\in G_p}c_j'\ket{\eta_j}.
+\end{equation}
+Let $f$ be any linear functional on the second factor. Applying
+$\mathrm{id}\otimes f$ to \eqref{eq:grouped} gives
+$f(C)\ket C=\sum_p f(u_p)\ket{\xi_{(p)}}$. Choosing one $f$ with $f(C)\ne0$ shows
+that $\ket C\in\spn\{\xi_{(p)}\}$, so by independence there are unique scalars
+$\lambda_p$ with $\ket C=\sum_p\lambda_p\ket{\xi_{(p)}}$. Substituting back and
+comparing coordinates in the independent family $\{\xi_{(p)}\}$ gives
+$f(u_p)=\lambda_pf(C)$ for every $f$ and every $p$, i.e.
+\[
+\ket{u_p}=\lambda_p\ket C\qquad(1\le p\le m).
+\]
+Now $\ket C=\sum_p\lambda_p\ket{\xi_{(p)}}$ expresses $C$ in pairwise
+non-proportional stabilizer states, so by $\chi(C)=3$ (Theorem~\ref{thm:cited}) at
+least three of the $\lambda_p$ are nonzero. For each such $p$, the identity
+$\ket{u_p}=\lambda_p\ket C$ expresses a nonzero multiple of $C$ as a combination of the
+$|G_p|$ stabilizer states $\{\eta_j\}_{j\in G_p}$, whence $|G_p|\ge\chi(C)=3$.
+Therefore $k=\sum_p|G_p|\ge3\cdot3=9$.
+\end{proof}
+
+\begin{proposition}[Rank inequality]\label{prop:sylvester}
+In the situation \eqref{eq:prodcut}, let $\mathsf X$ (resp.\ $\mathsf Y$) be the
+$64\times k$ matrix whose columns are the amplitude vectors of the $\xi_j$ (resp.\
+$\eta_j$), and put $r=\rank\mathsf X$, $r'=\rank\mathsf Y$. Then
+\[
+r\ge3,\qquad r'\ge3,\qquad r+r'\le k+1 .
+\]
+In particular an eight-term decomposition into product stabilizer states would require
+$3\le r,r'$ and $r+r'\le9$, so at least one of the two families is linearly dependent.
+\end{proposition}
+
+\begin{proof}
+Matricize $C\otimes C$ across the cut: let $M\in\C^{64\times64}$ have entries
+$M_{x,x'}=\braket{x|C}\braket{x'|C}$, so $M=\mathbf c\,\mathbf c^{\mathsf T}$ where
+$\mathbf c$ is the amplitude vector of $C$; thus $\rank M=1$. Equation
+\eqref{eq:prodcut} reads $M=\mathsf X\,\mathsf D\,\mathsf Y^{\mathsf T}$ with
+$\mathsf D=\operatorname{diag}(c_1,\dots,c_k)$ invertible. Sylvester's rank inequality
+applied to the product $(\mathsf X\mathsf D)\cdot\mathsf Y^{\mathsf T}$, whose inner
+dimension is $k$, gives
+\[
+1=\rank M\ \ge\ \rank(\mathsf X\mathsf D)+\rank(\mathsf Y^{\mathsf T})-k=r+r'-k .
+\]
+For $r\ge3$: the column space of $M$ is $\C\mathbf c$ and is contained in the column
+space of $\mathsf X$, so $\ket C\in\spn\{\xi_j\}$. If $r\le2$, choose $r$ linearly
+independent columns of $\mathsf X$; they span $\spn\{\xi_j\}\ni\ket C$, exhibiting
+$C$ as a combination of at most two stabilizer states and contradicting $\chi(C)=3$.
+The argument for $r'$ is symmetric.
+\end{proof}
+
+\section{Rigidity of the residual state and its tensor square}\label{sec:rigid}
+
+Throughout this section we work on five and ten qubits with $\qq$ as in
+\eqref{eq:qdef} and $w_0,w_1,d$ as in \eqref{eq:ws}--\eqref{eq:dC}. We write
+$\bb$ for the polar form of $\qq$.
+
+\begin{lemma}[Structure of $\qq$]\label{lem:qstruct}
+\begin{enumerate}[label=(\alph*)]
+\item $\bb(y,z)=\big(\sum_jy_j\big)\big(\sum_jz_j\big)+y\cdot z \pmod 2$, an
+alternating $\F_2$-bilinear form whose radical is $\{0^5,\one_5\}$, of dimension $1$.
+\item $\qq(y+\one_5)=\qq(y)+1$; hence each level set $\qq^{-1}(0)$, $\qq^{-1}(1)$ has
+exactly $16$ elements.
+\item Neither level set of $\qq$ is an affine subspace of $\F_2^5$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+(a) The linear part $\wt y$ of $\qq$ does not contribute to the polar form, so
+$\bb=\pol_{\sigma_5}$. Expanding,
+$\sigma_5(y+z)=\sigma_5(y)+\sigma_5(z)+\sum_{j\ne k}y_jz_k$ and
+$\sum_{j\ne k}y_jz_k=(\sum_jy_j)(\sum_kz_k)-\sum_jy_jz_j$, which modulo $2$ is the
+stated formula. It is alternating since $\bb(y,y)=\wt y^2+\wt y\equiv0$. For the
+radical, $\bb(y,e_j)=\big(\sum_ky_k\big)+y_j$, so $y$ is in the radical iff
+$y_j=\sum_ky_k$ for every $j$, i.e.\ iff all $y_j$ are equal; both $0^5$ and $\one_5$
+satisfy this (for $\one_5$, $\sum_k1=5\equiv1$).
+
+(b) By Lemma~\ref{lem:sigma}, $\qq(y)$ depends only on $n=\wt y$ through the table
+$(0,1,1,0,0,1)$ for $n=0,\dots,5$; and $\wt{y+\one_5}=5-n$. The table read backwards is
+$(1,0,0,1,1,0)$, the complement, which is the assertion. It follows that
+$y\mapsto y+\one_5$ is a bijection between the two level sets, so each has $32/2=16$
+elements.
+
+(c) $\qq^{-1}(0)$ contains $0^5$, so if it were affine it would be a linear subspace.
+It contains $u_1=e_1+e_2+e_3$ and $u_2=e_1+e_2+e_4$ (weight $3$, where $\qq=0$) but not
+$u_1+u_2=e_3+e_4$ (weight $2$, where $\qq=1$); so it is not closed under addition. If
+$\qq^{-1}(1)$ were affine then, having $16=2^4$ elements, it would be an affine
+hyperplane, and its complement $\qq^{-1}(0)$ would be the opposite coset of the same
+hyperplane, hence affine --- contradiction.
+\end{proof}
+
+\subsection{The plane spanned by $w_0$ and $w_1$}
+
+\begin{theorem}[Plane rigidity]\label{thm:plane}
+The only stabilizer rays contained in $\spn\{\ket{w_0},\ket{w_1}\}$ are $[w_0]$ and
+$[w_1]$.
+\end{theorem}
+
+\begin{proof}
+A vector $\ket\psi=\mu_0\ket{w_0}+\mu_1\ket{w_1}$ has amplitude $\mu_0+\mu_1$ on
+$\qq^{-1}(0)$ and $\mu_0-\mu_1$ on $\qq^{-1}(1)$; in particular its amplitude is
+constant on each level set.
+
+\emph{Case 1: both amplitudes nonzero.} Then $\ket\psi$ has full support, so if it is a
+stabilizer state all its amplitudes have equal modulus and their pairwise ratios are
+powers of $i$. Hence $(\mu_0-\mu_1)/(\mu_0+\mu_1)\in\{1,-1,i,-i\}$. The value $1$ forces
+$\mu_1=0$, giving $[w_0]$; the value $-1$ forces $\mu_0=0$, giving $[w_1]$. The values
+$\pm i$ give $\ket\psi\propto\sum_yi^{\pm\qq(y)}\ket y$, whose phase exponent is
+$h=\pm\qq$; exactly as in Lemma~\ref{lem:chid},
+$(\Delta_{e_1}\Delta_{e_2}h)(0)=\pm1$ is odd, so Corollary~\ref{cor:test}(a) rules
+these out.
+
+\emph{Case 2: one amplitude vanishes.} Then the support of $\ket\psi$ is a level set of
+$\qq$, which is not affine by Lemma~\ref{lem:qstruct}(c); but the support of a
+stabilizer state is affine.
+\end{proof}
+
+\subsection{The tensor-square plane}
+
+The four product states $\ket{w_a}\otimes\ket{w_b}$, $a,b\in\{0,1\}$, are stabilizer
+states spanning a four-dimensional subspace of $(\C^2)^{\otimes 10}$ which contains
+$\ket d\otimes\ket d$ by \eqref{eq:Chat}. Call it the \emph{tensor-square plane}
+\[
+\mathcal P:=\spn\{\ket{w_a}\otimes\ket{w_b}\ :\ a,b\in\{0,1\}\}.
+\]
+Every $\ket\psi\in\mathcal P$ has an amplitude that is constant on each of the four
+\emph{cells}
+\[
+\mathcal C_{ab}:=\{(y,z)\in\F_2^5\times\F_2^5:\ \qq(y)=a,\ \qq(z)=b\},
+\qquad |\mathcal C_{ab}|=16^2=256,
+\]
+and $\ket\psi$ is determined by the table $(m_{ab})_{a,b\in\F_2}$ of those values.
+
+\begin{theorem}[Tensor-square plane rigidity]\label{thm:squareplane}
+The only stabilizer rays contained in $\mathcal P$ are the four product rays
+$[w_a\otimes w_b]$, $a,b\in\{0,1\}$.
+\end{theorem}
+
+\begin{proof}
+Let $\ket\psi\in\mathcal P$ be a stabilizer state with cell table $(m_{ab})$. Its
+support is the union of the cells with $m_{ab}\ne0$, hence has cardinality
+$256\cdot\#\{(a,b):m_{ab}\ne0\}$. A stabilizer state has affine support, of cardinality
+a power of $2$, so the number of nonzero cells is $1$, $2$ or $4$.
+
+\emph{One cell.} The support is $\qq^{-1}(a)\times \qq^{-1}(b)$. The image of an affine
+set under the coordinate projection $(y,z)\mapsto y$ is affine, and here that image is
+$\qq^{-1}(a)$, which is not affine (Lemma~\ref{lem:qstruct}(c)). Contradiction.
+
+\emph{Two cells.} If the two cells form a row or a column, the projection onto one of
+the two blocks is again a level set of $\qq$, and the same contradiction applies. The
+remaining possibility is a diagonal, i.e.\ a level set of the Boolean quadratic
+$Q(y,z):=\qq(y)+\qq(z)$ on $\F_2^{10}$. Such a level set has $512=2^9$ elements, so if
+it were affine it would be an affine hyperplane, and then $Q$ would be an $\F_2$-affine
+function; but the polar form of $Q$ is $\bb\oplus\bb$, which is nonzero
+(e.g.\ $\bb(e_1,e_2)=1$ by Lemma~\ref{lem:qstruct}(a)), while affine functions have zero
+polar form. Contradiction.
+
+\emph{Four cells (full support).} Fix $z_0\in\F_2^5$ and contract the second block with
+$\bra{z_0}$. By Lemma~\ref{lem:ops}(e) the result is a stabilizer state (it is nonzero,
+as $\ket\psi$ has full support); it lies in $\spn\{w_0,w_1\}$ and has full support, so
+Theorem~\ref{thm:plane} (Case 1) forces its two cell values to have ratio $\pm1$. Thus
+$m_{1b}/m_{0b}\in\{1,-1\}$ for $b\in\{0,1\}$, and symmetrically
+$m_{a1}/m_{a0}\in\{1,-1\}$. Rescaling so that $m_{00}=1$, the table is therefore a sign
+table, $m_{ab}=(-1)^{s(a,b)}$ with $s:\F_2^2\to\F_2$ and $s(0,0)=0$; write
+$s(a,b)=\lambda a+\mu b+\nu ab$ with $\lambda,\mu,\nu\in\F_2$.
+
+If $\nu=0$ the table factorizes, $m_{ab}=(-1)^{\lambda a}(-1)^{\mu b}$, and $\ket\psi$
+is one of the four product rays $[w_\lambda\otimes w_\mu]$.
+
+If $\nu=1$, the phase exponent of $\ket\psi$ is
+\[
+h(y,z)=2\big(\lambda\qq(y)+\mu\qq(z)+\qq(y)\qq(z)\big)\bmod4 .
+\]
+Reading $\qq$ as an integer-valued function with values in $\{0,1\}$, group the terms as
+$h(y,z)=2\big(\lambda+\qq(z)\big)\qq(y)+2\mu\qq(z)$. Take the directions
+$\mathbf a=(e_1,0)$ and $\mathbf b=(e_2,0)$, both supported in the first block, and the
+base point $(0,z)$. The term $2\mu\qq(z)$ does not depend on $y$ and cancels, so
+\[
+(\Delta_{\mathbf a}\Delta_{\mathbf b}h)(0,z)
+=2\big(\lambda+\qq(z)\big)\big[\qq(e_1+e_2)-\qq(e_1)-\qq(e_2)+\qq(0)\big]
+=-2\big(\lambda+\qq(z)\big)\equiv 2\big(\lambda+\qq(z)\big)\pmod 4,
+\]
+since by Lemma~\ref{lem:sigma} the bracket is $1-1-1+0=-1$. As $z$ ranges over
+$\F_2^5$, $\qq(z)$ takes both values, so this second difference takes the value $0$ for
+some base points and $2$ for others, whichever $\lambda\in\{0,1\}$ is.
+Corollary~\ref{cor:test}(b) rules this case out.
+\end{proof}
+
+\begin{corollary}\label{cor:noplane}
+Any decomposition of $\ket d\otimes\ket d$ into three stabilizer states must use at
+least one stabilizer state outside $\mathcal P$.
+\end{corollary}
+
+\begin{proof}
+By \eqref{eq:Chat},
+\[
+\ket d\otimes\ket d=\frac{-i}2\Big(\ket{w_0}\otimes\ket{w_0}+i\ket{w_0}\otimes\ket{w_1}
++i\ket{w_1}\otimes\ket{w_0}-\ket{w_1}\otimes\ket{w_1}\Big),
+\]
+so all four coordinates of $d\otimes d$ in the basis $\{w_a\otimes w_b\}$ of
+$\mathcal P$ are nonzero. By Theorem~\ref{thm:squareplane}, three stabilizer states
+inside $\mathcal P$ are (up to scalars) three of the four basis vectors, and their span
+is a coordinate subspace of dimension $3$, which does not contain $d\otimes d$.
+\end{proof}
+
+\subsection{One entangled slice, and the failure of its natural enlargement}
+
+Corollary~\ref{cor:noplane} says a three-term certificate must involve a stabilizer
+state entangled across the $5\,|\,5$ cut. At least one such state does interact
+exactly with $d\otimes d$.
+
+\begin{proposition}[Graph slice]\label{prop:graph}
+Let $\mathcal G:=\{(y,y+\one_5):y\in\F_2^5\}\subseteq\F_2^{10}$, a linear
+subspace of dimension $5$. The amplitude of $\ket d\otimes\ket d$ is the constant $-i$
+on $\mathcal G$. Consequently the uniform superposition
+$\ket{g}:=\sum_{y}\ket{y}\otimes\ket{y+\one_5}$ is a stabilizer state, entangled across the
+$5\,|\,5$ cut, on which $d\otimes d$ restricts to $-i\ket g$.
+\end{proposition}
+
+\begin{proof}
+By Lemma~\ref{lem:qstruct}(b), $\qq(y)+\qq(y+\one_5)=1$ for every $y$, so the amplitude
+$i^{-\qq(y)}i^{-\qq(y+\one_5)}=i^{-1}=-i$. The set $\mathcal G$ is the graph of the
+invertible affine map $y\mapsto y+\one_5$, hence a $5$-dimensional affine (indeed linear)
+subspace, and a uniform superposition over an affine subspace is a stabilizer state
+(Definition~\ref{def:stab} with $h=0$). It is entangled across the cut because its
+reduced density matrix on the first block is proportional to the identity on a
+$32$-dimensional space, while a product state would have rank one.
+\end{proof}
+
+The obvious way to try to grow this slice is to enlarge $\mathcal G$ to a subspace whose
+direction space is totally isotropic for the polar form $\bb\oplus\bb$ of the exponent
+of $d\otimes d$ modulo $2$. That parity condition is necessary
+(Lemma~\ref{lem:diff}(i)) but not sufficient, and the natural first enlargement fails.
+
+\begin{proposition}[The $64$-point enlargement is not stabilizer]\label{prop:noenlarge}
+Let
+$\mathcal L:=\{(y,y+s\one_5)\ :\ y\in\F_2^5,\ s\in\F_2\}$, a linear subspace of $\F_2^{10}$
+of dimension $6$ whose direction space is totally isotropic for $\bb\oplus\bb$. The
+restriction of $\ket d\otimes\ket d$ to $\mathcal L$ is not a stabilizer state.
+\end{proposition}
+
+\begin{proof}
+Parametrize $\mathcal L$ by $(y,s)\in\F_2^5\times\F_2$. For $s=0$ the amplitude of
+$d\otimes d$ is $i^{-2\qq(y)}=(-1)^{\qq(y)}$, and for $s=1$ it is $-i$ by
+Proposition~\ref{prop:graph}. A phase exponent is therefore
+\[
+H(y,s)=2\qq(y)\,(1+s)+3s \bmod 4 ,
+\]
+since $H(y,0)=2\qq(y)$ and $H(y,1)=4\qq(y)+3\equiv3$. Taking directions $e_1,e_2$ in
+the $y$ block and base point $(0,s)$,
+\[
+(\Delta_{e_1}\Delta_{e_2}H)(0,s)=2(1+s)\big[\qq(e_1+e_2)-\qq(e_1)-\qq(e_2)+\qq(0)\big]
+=2(1+s)\cdot(-1),
+\]
+i.e.\ $-2\equiv2\pmod4$ for $s=0$ and $-4\equiv0\pmod4$ for $s=1$. The second difference
+depends on the base point, so Corollary~\ref{cor:test}(b) applies.
+
+For the isotropy claim: the direction space of $\mathcal L$ is spanned by
+$\{(e_j,e_j)\}_{j=1}^5$ and $(0,\one_5)$. Since $\one_5$ spans the radical of $\bb$
+(Lemma~\ref{lem:qstruct}(a)), the vector $(0,\one_5)$ pairs trivially with everything;
+and for the remaining generators,
+\[
+(\bb\oplus\bb)\big((e_j,e_j),(e_k,e_k)\big)=\bb(e_j,e_k)+\bb(e_j,e_k)=0 .
+\]
+\end{proof}
+
+\subsection{A finite reduction}
+
+Finally we reduce the exclusion of $\chi(d^{\otimes2})\le3$ to a finite (if large)
+amount of checking.
+
+\begin{lemma}[No hyperplane-coset restriction is stabilizer]\label{lem:norestr}
+Let $\mathcal K\subseteq\F_2^{10}$ be a coset of an affine hyperplane, i.e.\
+$\mathcal K=\{\mathbf x:v\cdot \mathbf x=\epsilon\}$ for some $v\ne0$, $\epsilon\in\F_2$. Then the
+restriction of $\ket d\otimes\ket d$ to $\mathcal K$ is not a stabilizer state; hence
+its stabilizer rank is at least $2$.
+\end{lemma}
+
+\begin{proof}
+The restriction has full support on $\mathcal K$, so if it were a stabilizer state its
+affine support would be exactly $\mathcal K$, whose direction space $\mathcal K_0$ has
+dimension $9$. Its phase exponent is the restriction of
+$h(y,z)=-\qq(y)-\qq(z)$, and $h\equiv \qq(y)+\qq(z)\pmod2$, whose second difference in
+directions $\mathbf a,\mathbf b$ is $(\bb\oplus\bb)(\mathbf a,\mathbf b)$ modulo $2$. By
+Lemma~\ref{lem:diff}(i) the form $\bb\oplus\bb$ would have to vanish identically on
+$\mathcal K_0$, i.e.\ $\mathcal K_0$ would be totally isotropic. But the radical of
+$\bb\oplus\bb$ is $\{0,\one_5\}\times\{0,\one_5\}$, of dimension $2$
+(Lemma~\ref{lem:qstruct}(a)), so by Lemma~\ref{lem:isotropy} a totally isotropic
+subspace of $\F_2^{10}$ has dimension at most $2+\frac{10-2}2=6<9$. Contradiction.
+\end{proof}
+
+\begin{proposition}[Finite reduction]\label{prop:reduction}
+Suppose $\ket d\otimes\ket d=\sum_{j=1}^3c_j\ket{\varphi_j}$ with
+$\ket{\varphi_j}\in\Stab_{10}$ and let $\mathcal A_j$ be the affine support of
+$\ket{\varphi_j}$. Then:
+\begin{enumerate}[label=(\alph*)]
+\item $\mathcal A_1\cup\mathcal A_2\cup\mathcal A_3=\F_2^{10}$ and at least one
+$\mathcal A_j$ has dimension $\ge9$;
+\item either all three $\mathcal A_j$ equal $\F_2^{10}$, or some hyperplane-coset
+restriction of $\ket d\otimes\ket d$ has stabilizer rank exactly $2$;
+\item if one summand is the graph slice of Proposition~\ref{prop:graph} and the other
+two supports are proper, then those two supports are the two complementary cosets of
+one affine hyperplane.
+\end{enumerate}
+Consequently $\chi(d^{\otimes2})=4$ would follow from the two finite verifications:
+(i) none of the $2(2^{10}-1)=2046$ hyperplane-coset restrictions of $d\otimes d$ has
+stabilizer rank $2$; and (ii) $d\otimes d$ is not a combination of at most three
+full-support stabilizer states.
+\end{proposition}
+
+\begin{proof}
+(a) $\ket d\otimes\ket d$ has full support, so the union of the $\mathcal A_j$ is all of
+$\F_2^{10}$. If every $\mathcal A_j$ had dimension $\le8$ then
+$|\bigcup_j\mathcal A_j|\le3\cdot2^8=768<1024=2^{10}$.
+
+(b) Suppose some $\mathcal A_j$ is proper. Then it lies in an affine hyperplane
+$\mathcal H$; let $\mathcal K=\F_2^{10}\setminus\mathcal H$ be the opposite coset.
+Restriction to $\mathcal K$ is, up to a Clifford, the Pauli projection
+$\frac12(I-(-1)^{\epsilon}Z^v)$ of Lemma~\ref{lem:ops}(d) followed by discarding the
+complement; it annihilates $\ket{\varphi_j}$ and maps each remaining summand to zero or
+a stabilizer state. Hence the restriction of $\ket d\otimes\ket d$ to $\mathcal K$ has
+stabilizer rank at most $2$, and by Lemma~\ref{lem:norestr} it is not $1$.
+
+(c) The graph slice has $32$ points, so the other two supports must cover the
+remaining $1024-32=992$ points. Two proper affine subspaces have at most $512$ points
+each; if one had dimension $\le8$ the union would have at most $512+256=768<992$
+points. So both are affine hyperplane cosets. Two distinct cosets of the \emph{same}
+hyperplane cover all $1024$ points, whereas two cosets of \emph{different} hyperplanes
+intersect in $256$ points and cover only $512+512-256=768<992$. Hence they are the two
+complementary cosets of a single hyperplane.
+
+The final statement follows since (a)--(b) exhaust the possibilities: either all
+supports are full, which is case (ii), or case (i) applies.
+\end{proof}
+
+We emphasise that neither of the two finite verifications is carried out here. Both are
+large: the number of $9$-qubit stabilizer states, and a fortiori the number of pairs, is
+$2^9\prod_{k=1}^{9}(2^k+1)\approx1.8\times10^{16}$, and the number of full-support
+$10$-qubit stabilizer states is $4^{10}2^{45}\approx3.7\times10^{19}$. Exhausting either
+would require substantially better pruning than support dimension alone.
+
+\section{Lower bounds}\label{sec:lower}
+
+\subsection{The bound $\chi(C\otimes C)\ge3$}
+
+\begin{proposition}\label{prop:lower3}
+$\chi(C\otimes C)\ge3$.
+\end{proposition}
+
+\begin{proof}
+By Lemma~\ref{lem:catamp} the amplitude of $\ket C$ at $x=0^6$ is $\sqrt2$, so
+$\braket{0^6|C}=\sqrt2\ne0$ and therefore
+\begin{equation}\label{eq:contract0}
+\big(\mathrm{id}\otimes\bra{0^6}\big)\big(\ket C\otimes\ket C\big)=\sqrt2\,\ket C .
+\end{equation}
+By Lemma~\ref{lem:ops}(e), $\chi(C)\le\chi(C\otimes C)$, and $\chi(C)=3$ by
+Theorem~\ref{thm:cited}.
+\end{proof}
+
+Together with Theorem~\ref{thm:nine} this proves Theorem~\ref{thm:main}.
+
+\subsection{A $\cat_2$ contraction and a $\cat_{12}$ projection}
+
+The following two exact relations do not improve the numerical interval, but they
+identify smaller and larger exact-rank problems whose resolution would.
+
+\begin{proposition}[Contraction to $\cat_{10}$]\label{prop:cat10}
+Let $\ket\beta:=\ket{00}+i\ket{11}$, a two-qubit stabilizer state, and contract
+$\bra\beta$ against the sixth qubit of each copy of $C$. Then, up to reordering the ten
+remaining qubits,
+\begin{equation}\label{eq:cat10}
+\big(\bra\beta\otimes\mathrm{id}\big)\big(\ket C\otimes\ket C\big)
+=\ket T^{\otimes10}+\ket{T^\perp}^{\otimes10}=\sqrt2\,\ket{\cat_{10}} ,
+\end{equation}
+and hence $\chi(C\otimes C)\ge\chi(\cat_{10})$.
+\end{proposition}
+
+\begin{proof}
+Direct computation with $\bra\beta=\bra{00}-i\bra{11}$ gives
+\[
+\braket{\beta|T,T}=1+(-i)\omega^2=1+(-i)(i)=2,\qquad
+\braket{\beta|T^\perp,T^\perp}=1+(-i)(+1)\omega^2=2,
+\]
+\[
+\braket{\beta|T,T^\perp}=1+(-i)(-\omega^2)=1+i\cdot i=0,\qquad
+\braket{\beta|T^\perp,T}=0 .
+\]
+Expanding $\ket C\otimes\ket C=\frac12\big(T^{\otimes6}+ (T^\perp)^{\otimes6}\big)
+\otimes\big(T^{\otimes6}+(T^\perp)^{\otimes6}\big)$ and contracting, the two mixed
+terms vanish and the two like terms each acquire a factor $2$, giving
+$\frac12\cdot2\,(T^{\otimes10}+(T^\perp)^{\otimes10})$, which is
+$\sqrt2\ket{\cat_{10}}$ by Definition~\ref{def:T}. The rank inequality is
+Lemma~\ref{lem:ops}(e).
+\end{proof}
+
+\begin{proposition}[Projection from $\cat_{12}$]\label{prop:cat12}
+Let $\Pi:=\frac12\big(I+Z^{\otimes6}\otimes I^{\otimes6}\big)$, the projector onto even
+parity of the first six qubits. Then
+\begin{equation}\label{eq:cat12}
+\ket C\otimes\ket C=\sqrt2\,\Pi\ket{\cat_{12}},
+\end{equation}
+and hence $\chi(C\otimes C)\le\chi(\cat_{12})$.
+\end{proposition}
+
+\begin{proof}
+By Lemma~\ref{lem:catamp}, $\ket{\cat_{12}}=\sqrt2\sum_{\mathbf x\in\Ev_{12}}\omega^{\wt{\mathbf x}}\ket{\mathbf x}$.
+Writing $\mathbf x=(x,x')$ with $x,x'\in\F_2^6$, the projector $\Pi$ keeps exactly those $\mathbf x$
+with $\wt x$ even, and combined with $\wt x+\wt{x'}$ even this forces $\wt{x'}$ even
+too. Hence
+$\sqrt2\,\Pi\ket{\cat_{12}}=2\sum_{x,x'\in\Ev_6}\omega^{\wt x+\wt{x'}}\ket{x,x'}$,
+which is precisely the amplitude of $\ket C\otimes\ket C$ by \eqref{eq:catamp}. The rank
+inequality is Lemma~\ref{lem:ops}(d).
+\end{proof}
+
+\begin{theorem}[Sandwich]\label{thm:sandwich}
+$\chi(\cat_{10})\le\chi(C\otimes C)\le\chi(\cat_{12})$.
+\end{theorem}
+
+\begin{proof}
+Combine Propositions~\ref{prop:cat10} and \ref{prop:cat12}.
+\end{proof}
+
+\begin{remark}
+Note that $\ket{\cat_{12}}\ne\ket C\otimes\ket C$: expanding definitions,
+$\ket C\otimes\ket C=\frac1{\sqrt2}\big(\ket{\cat_{12}}+\ket{\mathrm{cross}}\big)$ where
+$\ket{\mathrm{cross}}=\frac1{\sqrt2}\big(T^{\otimes6}\otimes(T^\perp)^{\otimes6}
++(T^\perp)^{\otimes6}\otimes T^{\otimes6}\big)$ is orthogonal to $\ket{\cat_{12}}$.
+Consequently bounds on the tensor square do not transfer to $\cat_{12}$ and conversely;
+\eqref{eq:cat12} is the only implication between them proved here. At present
+\eqref{eq:cat10} does not improve the numerical lower bound: computational-basis
+contraction only gives $\chi(\cat_{10})\ge\chi(\cat_6)=3$, and no proof of
+$\chi(\cat_{10})\ge4$ is known to us.
+\end{remark}
+
+\section{Discussion and open problems}\label{sec:open}
+
+\subsection{Status}
+
+The proved numerical result is $3\le\chi(C\otimes C)\le9$
+(Theorem~\ref{thm:main}). The upper bound is certified by the explicit three-term
+decomposition \eqref{eq:threeterm} and its tensor square \eqref{eq:nine}; the lower
+bound by $\chi(\cat_6)=3$ and the contraction \eqref{eq:contract0}. The exact relations
+$\chi(\cat_{10})\le\chi(C\otimes C)\le\chi(\cat_{12})$ hold but do not currently narrow
+the interval. Beyond these numbers, the structural content is:
+
+\begin{itemize}[leftmargin=*]
+\item $\chi(C\otimes C)=\chi(\widehat C^{\otimes2})$ with $\widehat C$ a full-support
+five-qubit state (Theorem~\ref{thm:compress}), and
+$\chi(C\otimes C)\le5+\chi(d^{\otimes2})$ with $\chi(d)=2$
+(Theorem~\ref{thm:reduce}, Lemma~\ref{lem:chid}). Conjecture~\ref{conj:main} would
+follow from $\chi(d^{\otimes2})\le3$.
+\item An eight-term decomposition into stabilizer states that are product across the
+$6\,|\,6$ cut must have dependent factor families, with local ranks $r,r'\ge3$ and
+$r+r'\le9$ (Propositions~\ref{prop:indep} and \ref{prop:sylvester}).
+\item The tensor-square plane $\mathcal P$ contains exactly four stabilizer rays, so no
+three-term decomposition of $d^{\otimes2}$ lives inside it
+(Theorem~\ref{thm:squareplane}, Corollary~\ref{cor:noplane}). Exactly one entangled
+stabilizer slice is known (Proposition~\ref{prop:graph}), and its natural
+maximal-isotropic enlargement is excluded (Proposition~\ref{prop:noenlarge}).
+\item Excluding $\chi(d^{\otimes2})\le3$ reduces to two finite tasks
+(Proposition~\ref{prop:reduction}), neither of which is completed here.
+\end{itemize}
+
+\subsection{The three remaining gaps}
+
+\begin{enumerate}[label=\textbf{(G\arabic*)},leftmargin=*]
+\item \emph{The eight-term upper bound.} What is missing is either (i) a three-term
+certificate for $d^{\otimes2}$ --- necessarily using at least one stabilizer state
+outside $\mathcal P$, by Corollary~\ref{cor:noplane} --- or (ii) an explicit
+affine-quadratic description of eight stabilizer summands of $C\otimes C$ with an exact
+amplitude verification, or (iii) the completion of the two finite tasks of
+Proposition~\ref{prop:reduction}, which would instead prove $\chi(d^{\otimes2})=4$ and
+close off route \eqref{eq:reduce}. Note that (iii) alone would \emph{not} refute
+Conjecture~\ref{conj:main}: route \eqref{eq:reduce} is sufficient, not necessary.
+\item \emph{A lower bound above three.} The contractions certify only rank three. The
+$\cat_2$ contraction \eqref{eq:cat10} reduces the question to $\chi(\cat_{10})\ge4$,
+for which the pair-classification technique of \cite{QPG2021} does not obviously
+generalize, since it would require control of spans of \emph{three} stabilizer states.
+The $\cat_{12}$ projection supplies nothing stronger. A proof of $\chi(\cat_{10})\ge4$,
+or a different contraction with a known rank-four output, would improve the interval,
+though it would not decide Conjecture~\ref{conj:main}.
+\item \emph{The exact value.} Every value in $\{3,4,\dots,9\}$ remains compatible with
+the two mechanisms used here. Determining $\chi(C\otimes C)$ requires an exact
+$k$-term witness together with an exclusion of all ranks below $k$.
+\end{enumerate}
+
+\subsection{Approaches that did not work}
+
+We record the failures so they are not repeated.
+
+\begin{itemize}[leftmargin=*]
+\item \emph{Deleting a term from \eqref{eq:nine}.} Impossible: the nine summands are
+linearly independent (Theorem~\ref{thm:nine}).
+\item \emph{Staying product across the cut.} Propositions~\ref{prop:indep} and
+\ref{prop:sylvester} force strong dependencies but do not close the case, and they say
+nothing about entangled summands.
+\item \emph{Staying inside $\mathcal P$.} Excluded by Theorem~\ref{thm:squareplane}.
+\item \emph{Growing the graph slice isotropically.} Excluded by
+Proposition~\ref{prop:noenlarge}: total isotropy of the direction space is necessary but
+not sufficient, and the third difference obstructs at the first enlargement.
+\item \emph{Invoking known multiplicativity results.} \cite[Thm.~4.1]{LovitzSteffan2022}
+proves $\chi(\psi_\zeta^{\otimes2})=4$ only for two-qubit $\psi_\zeta$ with $\zeta$
+outside a finite exceptional set; $\ket d$ has amplitudes in $\Q(i)$ and five qubits, so
+that theorem does not apply.
+\item \emph{Stabilizer extent or fidelity as a rank lower bound.} The usual
+Cauchy--Schwarz argument relating extent to rank degrades badly for an ill-conditioned
+minimal spanning set, and we obtained no usable inequality.
+\end{itemize}
+
+Appendix~\ref{app:numerics} records the numerical searches, which produced no
+certificate and are reported only as negative evidence about restricted search pools.
+
+\subsection{Promising next steps}
+
+For the upper bound: an exact affine-quadratic search over genuinely entangled
+ten-qubit stabilizer states, seeded by Proposition~\ref{prop:graph} and pruned by
+Lemma~\ref{lem:norestr} (which shows no summand can have a rank-one hyperplane-coset
+restriction). For the lower bound: a classification of spans of three stabilizer states
+sufficient to decide $\chi(\cat_{10})\ge4$. A cleaner intermediate target is the exact
+value of $\chi(d^{\otimes2})$, which by Theorem~\ref{thm:reduce} is the crux of
+route \eqref{eq:reduce} and lives on only ten qubits with full support.
+
+\appendix
+
+\section{Exact verification of the explicit identities}\label{app:verify}
+
+All identities in this note involving explicit amplitudes were verified by exact
+symbolic computation over $\Q(\omega)$, $\omega=e^{i\pi/4}$, namely:
+Lemma~\ref{lem:catamp} (equation \eqref{eq:catamp}); Lemma~\ref{lem:sigma};
+Theorem~\ref{thm:threeterm} (equation \eqref{eq:threeterm}); Lemma~\ref{lem:phiindep};
+Lemma~\ref{lem:sigmaq}; Theorem~\ref{thm:compress} (equations \eqref{eq:compress} and
+\eqref{eq:Chat}); Lemma~\ref{lem:qstruct}(a)--(c); the second-difference computations in
+Lemma~\ref{lem:chid}, Theorem~\ref{thm:plane}, Theorem~\ref{thm:squareplane} and
+Proposition~\ref{prop:noenlarge}; Corollary~\ref{cor:noplane};
+Proposition~\ref{prop:graph}; and Propositions~\ref{prop:cat10} and \ref{prop:cat12}
+(equations \eqref{eq:cat10} and \eqref{eq:cat12}).
+
+In addition, Theorem~\ref{thm:plane} was independently confirmed by brute force over all
+$4^5\cdot2^{10}=2^{20}$ full-support five-qubit stabilizer states: exactly two of them
+lie in $\spn\{w_0,w_1\}$, namely $w_0$ and $w_1$.
+
+\section{Numerical explorations (no certificates obtained)}\label{app:numerics}
+
+The following searches were run as guidance. None yields a proof, and none is used
+above.
+
+\begin{enumerate}[label=(\alph*),leftmargin=*]
+\item \emph{Pauli spectrum of $\cat_5$.} With $\cat_5$ normalized, the multiset of
+expectation values $\braket{\cat_5|P|\cat_5}$ over the $4^5=1024$ Pauli operators is
+\[
+(-1/2)^{20},\ (-1/4)^{40},\ 0^{782},\ (1/4)^{120},\ (1/2)^{60},\ 1^{2}.
+\]
+This is the finite datum entering the rank-two exclusion of \cite{QPG2021}; on its own
+it gives no control over spans of three stabilizer states and so no bound on
+$\chi(\cat_{10})$.
+\item \emph{Symmetry-generated pool.} The Clifford $A=e^{-i\pi/4}SX$ has $\ket T$ and
+$\ket{T^\perp}$ as eigenvectors with eigenvalues $+1$ and $-1$; consequently $A^{\otimes S}$
+fixes $\ket C$ for every even-cardinality subset $S$ of the six qubits. Applying these
+$32$ symmetries to $\varphi_1,\varphi_2,\varphi_3$ generates exactly $48$ distinct
+stabilizer rays, spanning a $32$-dimensional subspace. Randomized searches over
+products of these rays found no eight-term witness. This is evidence only about that
+restricted pool.
+\item \emph{Simulated annealing.} Annealing at rank eight for $\widehat C^{\otimes2}$,
+and at rank three for $d^{\otimes2}$ warm-started from a leave-one-out four-product
+seed, produced no exact solution and did not improve on the seed residual. Failure of a
+heuristic search is not evidence against Conjecture~\ref{conj:main}.
+\end{enumerate}
+
+\begin{thebibliography}{9}
+
+\bibitem{QassimThesis}
+Hammam Qassim,
+\emph{Classical Simulations of Quantum Systems Using Stabilizer Decompositions},
+PhD thesis, University of Waterloo, 2020 (deposited 2021).
+\url{https://uwspace.uwaterloo.ca/items/147b4d1e-1a97-49a8-a3e0-f5954c570cdb}.
+The decomposition giving $\chi(\cat_6(T))\le3$ is in \S4.2; Conjecture~\ref{conj:main}
+is Eq.~(4.30) in \S4.4, and the conjectural exponent $3/8$ is Eq.~(4.31).
+
+\bibitem{QPG2021}
+Hammam Qassim, Hakop Pashayan, and David Gosset,
+\emph{Improved upper bounds on the stabilizer rank of magic states},
+Quantum \textbf{5}, 606 (2021).
+\url{https://doi.org/10.22331/q-2021-12-20-606}, arXiv:2106.07740.
+The appendix proves $\chi(\cat_6)\ge\chi(\cat_5)\ge3$ via a canonical form for pairs of
+stabilizer states.
+
+\bibitem{LovitzSteffan2022}
+Benjamin Lovitz and Vincent Steffan,
+\emph{New techniques for bounding stabilizer rank},
+Quantum \textbf{6}, 692 (2022).
+\url{https://doi.org/10.22331/q-2022-04-20-692}, arXiv:2110.07781.
+Theorem~4.1 gives the first states with multiplicative stabilizer rank; Corollary~3.3
+gives $\chi(T^{\otimes n})\ge(n+1)/(4\log_2(n+1))$.
+
+\bibitem{PSV2022}
+Shir Peleg, Amir Shpilka, and Ben Lee Volk,
+\emph{Lower bounds on stabilizer rank},
+Quantum \textbf{6}, 652 (2022).
+\url{https://doi.org/10.22331/q-2022-02-15-652}.
+
+\bibitem{BSS2016}
+Sergey Bravyi, Graeme Smith, and John A. Smolin,
+\emph{Trading classical and quantum computational resources},
+Physical Review X \textbf{6}, 021043 (2016).
+\url{https://doi.org/10.1103/PhysRevX.6.021043}.
+
+\bibitem{BBCCGH2019}
+Sergey Bravyi, Dan Browne, Padraic Calpin, Earl Campbell, David Gosset, and Mark Howard,
+\emph{Simulation of quantum circuits by low-rank stabilizer decompositions},
+Quantum \textbf{3}, 181 (2019).
+\url{https://doi.org/10.22331/q-2019-09-02-181}.
+
+\bibitem{DehaeneDeMoor2003}
+Jeroen Dehaene and Bart De Moor,
+\emph{Clifford group, stabilizer states, and linear and quadratic operations over GF(2)},
+Physical Review A \textbf{68}, 042318 (2003).
+\url{https://doi.org/10.1103/PhysRevA.68.042318}.
+
+\bibitem{VandenNest2010}
+Maarten Van den Nest,
+\emph{Classical simulation of quantum computation, the Gottesman--Knill theorem, and
+slightly beyond},
+Quantum Information and Computation \textbf{10}, 258--271 (2010).
+
+\end{thebibliography}
+
+\end{document}
