@@ -1,0 +1,493 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{braket}
+\usepackage{array}
+\usepackage{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\cat}{\mathrm{cat}}
+
+\title{Bounding $\chi(\cat_6\otimes\cat_6)$}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Problem statement}
+
+\begin{definition}[Stabilizer state]
+An $n$-qubit pure state $\ket{\varphi}$ is a \emph{stabilizer state} if it can be written, in some computational basis, as
+\[
+\ket{\varphi}=\sum_{x\in A}i^{\ell(x)}(-1)^{q(x)}\ket{x},
+\]
+where $A\subseteq\F_2^n$ is an affine subspace, $q:A\to\{0,1\}$ is a quadratic function, and $\ell:A\to\{0,1,2,3\}$ is a linear function.
+\end{definition}
+
+\begin{definition}[Stabilizer rank]
+For a state $\ket{\psi}$, the stabilizer rank $\chi(\psi)$ is the minimum $k$ such that
+\[
+\ket{\psi}=\sum_{i=1}^k c_i\ket{\varphi_i}
+\]
+for some stabilizer states $\ket{\varphi_i}$ and coefficients $c_i\in\mathbb{C}$.
+\end{definition}
+
+\begin{definition}[The $T$-state]
+Define the unnormalized states
+\[
+\ket{T}:=\ket{0}+e^{i\pi/4}\ket{1},
+\qquad
+\ket{T^\perp}:=\ket{0}-e^{i\pi/4}\ket{1}.
+\]
+\end{definition}
+
+\begin{definition}[Cat states]
+For a single-qubit state $\ket{\psi}$ with orthogonal complement $\ket{\psi^\perp}$, with phase fixed by $\braket{0|\psi^\perp}$ real and positive, define
+\[
+\ket{\cat_n(\psi)}:=\frac{1}{\sqrt{2}}
+\left(\ket{\psi}^{\otimes n}+\ket{\psi^\perp}^{\otimes n}\right).
+\]
+Throughout, ``$\cat_6$'' means specifically $\cat_6(T)$:
+\[
+\ket{\cat_6}:=\frac{1}{\sqrt{2}}
+\left(\ket{T}^{\otimes6}+\ket{T^\perp}^{\otimes6}\right).
+\]
+\end{definition}
+
+It is known that $\chi(\cat_6)\leq3$ (Qassim, Waterloo PhD thesis 2020, \S4.2), so by submultiplicativity
+\[
+\chi(\cat_6\otimes\cat_6)\leq9.
+\]
+The problem is to determine $\chi(\cat_6\otimes\cat_6)$, or the best bound that can be proved. In particular, does
+\[
+\chi(\cat_6\otimes\cat_6)\leq8
+\]
+hold?
+
+\section{Conventions}
+
+I interpret ``computational basis'' as the fixed standard computational basis. Clifford changes of basis may be used explicitly because stabilizer rank is Clifford-invariant; an arbitrary orthonormal change of basis is not allowed.
+
+A stabilizer state is normally a normalized ray. Throughout the proof I use nonzero, unnormalized representatives of such rays, which does not change stabilizer rank. In the affine-quadratic normal form, choose affine coordinates $t\in\F_2^d$ on the support $A$. The phase is read as
+\[
+i^{L(t)}(-1)^{Q(t)},
+\]
+where $L$ is a linear polynomial modulo $4$ and $Q$ is a quadratic polynomial modulo $2$ (constant and linear terms may be absorbed between the two factors). This is the standard meaning of the phase convention in the question.
+
+\section{Best proved bound}
+
+Let $C=\ket{\cat_6}$. The rigorous conclusion is
+\[
+\boxed{3\leq\chi(C\otimes C)\leq9.}
+\]
+The upper bound is given by an exact nine-term decomposition below. The lower bound uses the published theorem $\chi(\cat_6)=3$ and a stabilizer contraction. I do not obtain an eight-term decomposition, nor a lower bound excluding rank eight. Therefore this is a progress report, not a complete solution. The question whether
+\[
+\chi(C\otimes C)\leq8
+\]
+remains unresolved here; it is Qassim's Conjecture (4.30) in thesis \S4.4.
+
+\section{An exact three-term decomposition of $C$}
+
+Put
+\[
+\omega=e^{i\pi/4},\qquad
+V=\{x\in\F_2^6:|x|\equiv0\pmod2\},\qquad
+S(x)=\sum_{1\leq j<k\leq6}x_jx_k\pmod2,
+\]
+and define the following unnormalized states:
+\[
+\begin{aligned}
+\ket{g}&=\ket{0^6}-i\ket{1^6},\\
+\ket{e}&=\sum_{x\in V}\ket{x},\\
+\ket{k}&=\sum_{x\in V}(-1)^{S(x)}\ket{x}.
+\end{aligned}
+\]
+All three are stabilizer states in the affine-quadratic sense. For $e$ and $k$, the support is the even-parity linear code and the phases are respectively $1$ and $(-1)^S$. For $g$, parametrize the repetition code by $x=t(1,1,1,1,1,1)$; the phase is
+\[
+i^t(-1)^t=(-i)^t,
+\]
+which gives exactly the two displayed amplitudes.
+
+Since $T^\perp=ZT$,
+\[
+C=\frac1{\sqrt2}\left(T^{\otimes6}+(T^\perp)^{\otimes6}\right)
+=\sqrt2\sum_{x\in V}\omega^{|x|}\ket{x}.
+\]
+I claim that
+\begin{equation}
+\boxed{
+C=2\sqrt2\,\ket{g}
++\frac{-1+i}{\sqrt2}\ket{e}
++\frac{-1-i}{\sqrt2}\ket{k}.
+}
+\tag{1}
+\end{equation}
+For an even-weight string $x$,
+\[
+(-1)^{S(x)}=(-1)^{\binom{|x|}{2}},
+\]
+whose signs at weights $0,2,4,6$ are $+1,-1,+1,-1$. Set
+\[
+a=2\sqrt2,\qquad b=\frac{-1+i}{\sqrt2},\qquad
+c=\frac{-1-i}{\sqrt2}.
+\]
+The amplitudes of $ag+be+ck$, grouped by Hamming weight, are
+\[
+\begin{array}{c|c|c}
+|x|&\text{amplitude}&\sqrt2\,\omega^{|x|}\\ \hline
+0&a+b+c=\sqrt2&\sqrt2\\
+2&b-c=i\sqrt2&i\sqrt2\\
+4&b+c=-\sqrt2&-\sqrt2\\
+6&-ia+b-c=-i\sqrt2&-i\sqrt2.
+\end{array}
+\]
+Both sides vanish on odd-weight strings, so this proves (1) on every computational-basis vector.
+
+\section{The nine-term upper bound}
+
+Let
+\[
+d_g=2\sqrt2,\qquad d_e=\frac{-1+i}{\sqrt2},\qquad
+d_k=\frac{-1-i}{\sqrt2}.
+\]
+Tensoring (1) with itself gives the exact identity
+\begin{equation}
+\boxed{
+C\otimes C
+=\sum_{u,v\in\{g,e,k\}}d_ud_v\,\ket{u}\otimes\ket{v}.
+}
+\tag{2}
+\end{equation}
+The tensor product of two stabilizer states is a stabilizer state: its affine support is the Cartesian product of the two supports, while its linear and quadratic phases are the sums of the phases of the factors. Equation (2) is therefore a nine-term stabilizer decomposition, and
+\[
+\chi(C\otimes C)\leq9.
+\]
+
+For clarity, the nine states in this particular expansion are linearly independent. Indeed, a relation among $g,e,k$ evaluated on strings of weights $2$ and $4$ first forces the coefficients of $e,k$ to vanish, and then the coefficient of $g$ vanishes. Tensor products of two independent triples are independent. This only shows that one cannot delete a term from (2); it is not an obstruction to an eight-term decomposition using different, possibly entangled, stabilizer states.
+
+There is a modest general obstruction to improving (2) while keeping every summand product across the displayed $6|6$ cut. Suppose
+\[
+C\otimes C=\sum_{j=1}^k c_j\,\ket{\alpha_j}\otimes\ket{\beta_j},
+\]
+where every $\alpha_j$ and $\beta_j$ is a six-qubit stabilizer state. Group proportional left factors, absorbing proportionality constants into the coefficients, and denote the distinct resulting left factors by $\alpha_{(1)},\ldots,\alpha_{(m)}$. If these vectors are linearly independent, the decomposition has the form
+\[
+C\otimes C=\sum_{p=1}^m\ket{\alpha_{(p)}}\otimes\ket{u_p}.
+\]
+Contracting the right block against a linear functional nonzero on $C$ first shows that $C$ belongs to the span of the $\alpha_{(p)}$. Uniqueness of coordinates in this independent left family then gives scalars $\lambda_p$ such that
+\[
+C=\sum_{p=1}^m\lambda_p\ket{\alpha_{(p)}},
+\qquad \ket{u_p}=\lambda_p C.
+\]
+At least three $\lambda_p$ are nonzero because $\chi(C)=3$. For every such $p$, the terms grouped into $u_p$ express a nonzero multiple of $C$ using the stabilizer states $\beta_j$, and hence that group contains at least three terms. Consequently $k\geq9$. Thus an eight-term decomposition consisting only of product stabilizer states would have to use linearly dependent sets of distinct left factors and, by the same argument, distinct right factors.
+
+The necessary dependence can also be quantified without assuming the distinct factors independent. Regard the decomposition as the amplitude-matrix identity
+\[
+ADB^{\mathsf T}=CC^{\mathsf T},
+\]
+where the columns of $A$ and $B$ are the amplitude vectors of $\alpha_j$ and $\beta_j$, and $D=\operatorname{diag}(c_1,\ldots,c_k)$ after zero terms are removed. If $r=\operatorname{rank}A$ and $r'=\operatorname{rank}B$, Sylvester's rank inequality gives
+\[
+1=\operatorname{rank}(ADB^{\mathsf T})\geq r+r'-k.
+\]
+Moreover $C$ belongs to both column spans: contract the other tensor factor against any linear functional nonzero on $C$. Since each column is a stabilizer state and $\chi(C)=3$, it follows that $r,r'\geq3$. Any eight-term product-cut decomposition must therefore satisfy
+\[
+3\leq r,r',\qquad r+r'\leq9.
+\]
+This argument does not apply to stabilizer states entangled across the $6|6$ cut, which are allowed in the definition of $\chi(C\otimes C)$.
+
+\section{A smaller exact target for an eight-term construction}
+
+Put
+\[
+b=\frac{-1+i}{\sqrt2},\qquad c=\frac{-1-i}{\sqrt2},\qquad
+\ket{D}=b\ket{e}+c\ket{k}.
+\]
+Thus $C=2\sqrt2\,g+D$, and hence
+\begin{equation}
+C\otimes C
+=8\,g\otimes g+2\sqrt2\,(g\otimes D+D\otimes g)+D\otimes D.
+\tag{3}
+\end{equation}
+Expanding each occurrence of $D$ in the two mixed terms costs two stabilizer states. Consequently
+\begin{equation}
+\boxed{\chi(C\otimes C)\leq5+\chi(D\otimes D).}
+\tag{4}
+\end{equation}
+In particular, an exact three-stabilizer decomposition of $D\otimes D$ would prove the desired bound $\chi(C\otimes C)\leq8$.
+
+This reduced target has a simple five-qubit description, but the compression must be implemented as a six-bit reversible map. Let $U$ be the computational-basis permutation induced by
+\[
+(x_1,\ldots,x_6)\longmapsto(p,y_1,\ldots,y_5)
+=(x_1+\cdots+x_6,x_2,\ldots,x_6).
+\]
+Its inverse is
+\[
+x=(p+y_1+\cdots+y_5,y_1,\ldots,y_5),
+\]
+so $U$ is an invertible linear transformation implemented by CNOT gates. On the even-parity support $V$, the first output bit is $p=0$. If
+\begin{equation}
+q(y)=\sum_{1\leq j<k\leq5}y_jy_k+\sum_{j=1}^5y_j\pmod2,
+\tag{5}
+\end{equation}
+then $S(x)=q(y)$ when $p=0$. Since the amplitudes of $D$ are $-\sqrt2$ for $S=0$ and $i\sqrt2$ for $S=1$, the exact transformed state is
+\begin{equation}
+\ket{d}=\sum_{y\in\F_2^5}i^{-q(y)}\ket{y},
+\qquad U\ket{D}=-\sqrt2\,\ket{0}\otimes\ket{d}.
+\tag{6}
+\end{equation}
+Here $q(y)$ in the exponent is represented by the integer $0$ or $1$. Clifford invariance, adjoining a stabilizer ancilla, and contraction with $\bra{0}$ give the two directions needed for
+\[
+\chi(D)=\chi(d),\qquad \chi(D\otimes D)=\chi(d\otimes d).
+\]
+Accordingly, the missing certificate in this route is a three-term affine-quadratic decomposition of the ten-qubit phase function
+\begin{equation}
+(y,z)\longmapsto i^{-q(y)-q(z)}.
+\tag{7}
+\end{equation}
+
+The state $D$ really has rank two, rather than one. It already has the two-term decomposition $be+ck$. On the other hand, a full-support stabilizer phase has an exponent modulo four of the form $L+2Q$, so its mixed second difference is even. For the exponent $h=-q\pmod4$ of (6), evaluated at $0,e_1,e_2,e_1+e_2$, the values are $0,3,3,3$, and therefore
+\[
+\Delta_{e_1}\Delta_{e_2}h(0)=3-3-3+0=1\pmod4.
+\]
+Thus (6) is not a stabilizer state and $\chi(D)=2$.
+
+There are exactly two stabilizer rays in the plane spanned by the two full-support stabilizers $1$ and $(-1)^q$. Indeed, up to overall scale, any vector in that plane has one amplitude $a+b$ on $q=0$ and another $a-b$ on $q=1$. If it is a full-support stabilizer state, their ratio must lie in $\{1,-1,i,-i\}$. Ratios $1$ and $-1$ give the original two rays. Ratios $i$ and $-i$ give phases proportional to $i^q$ and $i^{-q}$, and the same mixed-second-difference calculation excludes both. If one amplitude vanishes, the support is a level set of $q$. Translation by $r=1^5$ interchanges the two level sets because $q(y+r)=q(y)+1$; hence each has size $2^4=16$. The zero level is not affine: it contains $0$, $u=e_1+e_2+e_3$, and $v=e_1+e_2+e_4$, but not $u+v=e_3+e_4$. The one level cannot be affine either, because its complement would then be the opposite affine hyperplane. Hence no further stabilizer ray occurs.
+
+This plane rigidity has a tensor-square analogue. Write
+\[
+\ket{u}=\sum_y\ket{y},\qquad
+\ket{v}=\sum_y(-1)^{q(y)}\ket{y},
+\]
+so that $u,v$ are orthogonal stabilizer states and
+\[
+\ket{d}=\frac{1-i}{2}(\ket{u}+i\ket{v}).
+\]
+The only stabilizer rays in
+\[
+\operatorname{span}\{u\otimes u,u\otimes v,v\otimes u,v\otimes v\}
+\]
+are the four displayed product rays. To prove this, observe that every vector in this four-dimensional space has a constant amplitude $m_{ab}$ on each cell
+\[
+\{(y,z):q(y)=a,\ q(z)=b\},\qquad (a,b)\in\F_2^2,
+\]
+and every cell has size $16^2=256$. If its support is affine, the number of nonzero cells is therefore $1$, $2$, or $4$. A one-cell support is not affine, because its projection onto either block is a nonaffine level set of $q$. A two-cell support is either a row, a column, or one of the two diagonals. Rows and columns again have a nonaffine projection. A diagonal is a level set of the balanced quadratic $q(y)+q(z)$; if it were an affine hyperplane, that Boolean quadratic would be affine, contrary to its nonzero polar form.
+
+It remains to consider full support. Restricting a putative stabilizer state to a fixed computational-basis value of $z$ gives a full-support stabilizer in $\operatorname{span}\{u,v\}$. The preceding plane result forces the ratio $m_{1b}/m_{0b}$ to be $\pm1$, and restricting in the other direction gives the analogous conclusion for rows. After an overall scaling, the table $(m_{ab})$ is therefore a sign table. Every two-by-two sign table is either a product of a sign depending only on $a$ and one depending only on $b$, or differs from such a product by $(-1)^{ab}$. The product tables give exactly the four product rays above. The remaining possibility is not stabilizer: its exponent contains $2q(y)q(z)$ modulo four, whose fourth additive difference in the directions
+\[
+(e_1,0),\ (e_2,0),\ (0,e_1),\ (0,e_2)
+\]
+at the origin is $2\pmod4$. Every stabilizer exponent $L+2Q$ is quadratic modulo four and has vanishing fourth additive differences. This proves the claim. Since all four coordinates of $d\otimes d$ in this product basis are nonzero, no three stabilizer rays lying in this four-dimensional plane can span it. Thus any three-term decomposition sought in (7) must use at least one stabilizer state outside the natural tensor-square plane.
+
+There is at least one exact entangled stabilizer slice in (7). The polar form of $q$ is
+\[
+B(y,z)=\left(\sum_jy_j\right)\left(\sum_jz_j\right)+y\mathbin{\cdot} z,
+\]
+whose radical is generated by $r=1^5$, and $q(y+r)=q(y)+1$. Hence (7) is the constant $-i$ on the affine graph $z=y+r$. The uniform state on that graph is a stabilizer state entangled across the $5|5$ cut. This observation has not been extended here to a three-term decomposition of the full phase function (7); the ordinary four products of the two summands of $D$ remain the only certified decomposition. Thus (4) currently reproduces nine, not eight.
+
+The graph cannot be enlarged in the most obvious maximal-isotropic way. Let
+\[
+L=\{(y,z):z=y+sr,\ y\in\F_2^5,\ s\in\F_2\}.
+\]
+Its six-dimensional direction space is totally isotropic for $B\oplus B$, but that parity condition is only necessary, not sufficient, for the restriction of (7) to be a stabilizer phase. Indeed, on $L$ the target phase is $(-1)^{q(y)}$ for $s=0$ and $-i$ for $s=1$. One exponent modulo four is
+\[
+H(y,s)=2q(y)+3s+2s q(y)\pmod4.
+\]
+Its third additive difference in the directions $e_1,e_2$ of the $y$ block and the $s$ direction is $2\pmod4$, whereas every stabilizer exponent has vanishing third additive differences. Hence this 64-point restriction is not a stabilizer state; only the 32-point graph slice above is certified.
+
+There is, however, a finite support-dimension reduction for deciding whether the missing three-term decomposition exists. Let
+\[
+\ket{\psi}=\ket{d}\otimes\ket{d}
+\]
+and suppose $\psi=\sum_{j=1}^3c_j\varphi_j$, where $A_j\subseteq\F_2^{10}$ is the affine support of $\varphi_j$. Because $\psi$ has full support, the $A_j$ cover $\F_2^{10}$; in particular, at least one has dimension at least nine, since $3\cdot2^8<2^{10}$.
+
+More strongly, either all three $A_j$ have full dimension, or some affine hyperplane-coset restriction of $\psi$ has stabilizer rank at most two. To see this, if $A_j$ is proper, place it inside an affine hyperplane $H$ and let $K=\F_2^{10}\setminus H$, which is the opposite coset. Projection onto $K$ is a Pauli-$Z$ eigenspace projection, so it takes every stabilizer state to zero or a stabilizer state. It annihilates $\varphi_j$, leaving at most two summands for $\psi|_K$.
+
+In fact, every one of these hyperplane-coset restrictions has rank at least two. The exponent of (7), reduced modulo two, is $q(y)+q(z)$, with polar form $B\oplus B$. The radical of this alternating form has dimension two, and its nondegenerate quotient has dimension eight, so a totally isotropic subspace has dimension at most $2+8/2=6$. If the restriction to an affine hyperplane were a stabilizer state, its nine-dimensional direction space would have to be totally isotropic: otherwise some mixed second difference of its exponent would be odd. This is impossible. Hence the restrictions arising above would have rank exactly two, not one.
+
+Consequently, proving $\chi(d\otimes d)=4$ can be reduced to two exact tasks: exclude rank two for each of the $2(2^{10}-1)=2046$ hyperplane-coset restrictions, and exclude representations by at most three full-support stabilizer phases. Repeated rays are allowed in this statement (and may of course be combined); thus the second task includes possible ranks one and two, not only decompositions having three distinct rays. This is a finite reduction, not its completion; no classification or exhaustive certificate carrying out those two tasks is supplied here. It also constrains the five-dimensional graph slice: if it were one summand and the other two supports were both proper, those two supports would have to be the two complementary affine hyperplanes (otherwise their union has at most $768<992$ points), although a full-support remaining summand is also possible.
+
+\section{The lower bound}
+
+Qassim, Pashayan, and Gosset prove in the appendix of \emph{Improved Upper Bounds on the Stabilizer Rank of Magic States} that
+\begin{equation}
+\chi(\cat_6)=3.
+\tag{8}
+\end{equation}
+The paper uses $\ket{T}_{\mathrm{norm}}=2^{-1/2}(\ket{0}+\omega\ket{1})$, whereas the problem uses the unnormalized vector. Its cat state is consequently $C/8$. Multiplication by a nonzero overall scalar does not affect stabilizer rank, so (8) applies with the convention here.
+
+Their proof first shows $\chi(\cat_5)>2$ by a canonical-form classification of pairs of stabilizer states and a finite Pauli-spectrum comparison, and then uses the computational-basis contraction $\braket{0|\cat_6}\propto\cat_5$. I use (8) as a cited theorem rather than claiming a self-contained reproduction of that classification and computer-assisted finite check.
+
+Now contract the second six-qubit block of $C\otimes C$ with the stabilizer bra $\bra{0^6}$. Since
+\[
+\braket{0^6|C}=\sqrt2,
+\]
+we obtain
+\begin{equation}
+(I\otimes\bra{0^6})(C\otimes C)=\sqrt2\,C.
+\tag{9}
+\end{equation}
+Contracting a stabilizer state with a computational-basis stabilizer bra gives either zero or another stabilizer state. In affine coordinates, one intersects the affine support with the equations fixing the contracted coordinates and restricts the same affine-quadratic phase to that intersection. Hence an $r$-term decomposition of $C\otimes C$ would induce an at-most-$r$-term decomposition of $C$. Equations (8) and (9) imply
+\[
+\chi(C\otimes C)\geq3.
+\]
+
+\section{A further exact contraction}
+
+There is a useful further reduction of the lower-bound problem. Let
+\[
+\ket{B}=\ket{00}+i\ket{11},
+\]
+which is a two-qubit stabilizer state, and contract its bra against one qubit from each copy of $C$. Writing $U=T^\perp$, direct calculation gives
+\[
+\braket{B|T,T}=\braket{B|U,U}=2,
+\qquad
+\braket{B|T,U}=\braket{B|U,T}=0.
+\]
+Therefore, up to the harmless ordering of the ten uncontracted qubits,
+\begin{equation}
+\bra{B}\,C\otimes C
+=T^{\otimes10}+U^{\otimes10}
+=\sqrt2\,\ket{\cat_{10}}.
+\tag{10}
+\end{equation}
+For completeness, choose a two-qubit Clifford $W$ such that $W\ket{00}\propto\ket{B}$. Then $\bra{B}\propto\bra{00}W^\dagger$. Thus contraction with $\bra{B}$ is a Clifford operation on the contracted qubits followed by computational-basis restriction, and it maps each stabilizer summand to zero or a stabilizer state. Therefore
+\begin{equation}
+\chi(C\otimes C)\geq\chi(\cat_{10}).
+\tag{11}
+\end{equation}
+This is precisely the $\cat_2$ contraction used by Qassim, Pashayan, and Gosset to construct larger cats. At present it does not strengthen the numerical lower bound: computational-basis contractions show $\chi(\cat_{10})\geq\chi(\cat_6)=3$, while no proof of $\chi(\cat_{10})\geq4$ is supplied here. Equation (11) nevertheless identifies a concrete smaller exact-rank problem whose solution would immediately improve the lower bound.
+
+There is also an exact relation in the other direction. Let
+\[
+\Pi=\frac12\left(I+Z^{\otimes6}\otimes I^{\otimes6}\right).
+\]
+The state $\cat_{12}$ is supported on strings of even total parity. Projecting its first six qubits onto even parity therefore forces each block to have even parity. Comparing computational-basis amplitudes gives
+\begin{equation}
+\boxed{C\otimes C=\sqrt2\,\Pi\ket{\cat_{12}}.}
+\tag{12}
+\end{equation}
+Pauli projection maps a stabilizer state to zero or a stabilizer state, so together with (11) this gives the rigorous sandwich
+\begin{equation}
+\chi(\cat_{10})\leq\chi(C\otimes C)
+\leq\chi(\cat_{12}).
+\tag{13}
+\end{equation}
+No bound on $\cat_{12}$ strong enough to improve nine is established here.
+
+\section{Status and remaining open issues}
+
+\subsection*{What has been rigorously established}
+
+The proved numerical result is exactly
+\[
+\boxed{3\leq\chi(C\otimes C)\leq9.}
+\]
+The upper bound is certified by the explicit three-term decomposition (1) of $C$ and its nine-term tensor square (2). The lower bound follows from the published exact theorem $\chi(\cat_6)=3$ and the contraction (9). The additional exact relations
+\[
+\chi(\cat_{10})\leq\chi(C\otimes C)\leq\chi(\cat_{12})
+\]
+are also established, but they do not improve the numerical interval here.
+
+For product stabilizer summands across the natural $6|6$ cut, the argument above proves that an eight-term decomposition with independent distinct left factors is impossible, and likewise with left and right exchanged. More generally, any eight-term product-cut decomposition must have local ranks $r,r'\geq3$ satisfying $r+r'\leq9$, so both local collections must have the necessary dependencies described above. These restrictions do not apply to genuinely entangled stabilizer summands.
+
+The concrete upper-bound route through (4) is also rigorously reduced. The state $D$ has rank exactly two and is Clifford-equivalent, up to a stabilizer ancilla and a nonzero scalar, to the five-qubit state $d$ in (6). A three-term stabilizer decomposition of $d\otimes d$ would yield the desired eight-term decomposition. Such a decomposition cannot remain inside the natural four-dimensional tensor-square plane, whose only stabilizer rays are the four product rays. The affine graph $z=y+1^5$ gives one exact entangled stabilizer slice, while its proposed 64-point maximal-isotropic enlargement is rigorously excluded by the third-difference calculation. Finally, exclusion of a three-term decomposition of $d\otimes d$ is reduced to excluding rank two for all $2046$ hyperplane-coset restrictions and excluding representations by at most three full-support stabilizer phases. No hyperplane-coset restriction has rank one.
+
+\subsection*{What remains open}
+
+\begin{enumerate}
+\item \emph{Eight-term upper bound.} The gap is whether the upper bound after (2) can be lowered to eight. The exact product construction (2) was analyzed, including the independence of its nine summands. The product-cut argument also forces strong dependencies in any eight-term decomposition of product stabilizer states, but it does not constrain genuinely entangled stabilizer summands. Equation (4) reduces one concrete route to finding a three-term decomposition of the ten-qubit phase function (7). The tensor-square-plane classification proves that such a decomposition cannot stay inside the natural span of the four product summands, and the tempting 64-point enlargement of the known graph slice was excluded by a third-difference obstruction. The support-dimension argument further reduces exclusion of this route to hyperplane restrictions and the full-support case, but those finite checks were not completed. Either a three-term certificate for (7), necessarily using stabilizers outside the natural tensor-square plane, or an affine-quadratic description of eight different stabilizer summands with an exact amplitude verification, would close the upper-bound gap.
+
+\item \emph{Lower bound above three.} The gap in (9)--(13) is that the contractions certify only rank three. The $\cat_2$ contraction (10) reduces to $\cat_{10}$, but the cited small-cat classification does not prove $\chi(\cat_{10})\geq4$; the projection from $\cat_{12}$ also supplies no stronger number. Excluding all three-stabilizer spans containing $\cat_{10}$, or finding another contraction with a known rank-four output, would close this gap; it would improve the interval but would not settle the eight-term conjecture.
+
+\item \emph{Exact value.} The final gap is that ranks $3,4,\ldots,9$ remain compatible with the upper decomposition and lower contractions. Those are the two proof mechanisms used here, and neither supplies matching bounds. An exact $k$-term witness together with an exclusion of all ranks below $k$ would determine the value.
+\end{enumerate}
+
+\subsection*{Approaches tried and why they stalled}
+
+The exact product construction was analyzed first. Its nine displayed summands are independent, so no term can simply be deleted. The product-cut arguments impose dependencies on any hypothetical eight-term product decomposition, but they do not constrain stabilizer states entangled across the cut, which remain allowed.
+
+The reduced target $D\otimes D$, or equivalently $d\otimes d$, was then analyzed. Its ordinary product expansion has four terms and therefore only recovers the nine-term bound. The natural tensor-square plane contains no other stabilizer rays, so a three-term decomposition cannot be found wholly within that plane. The known entangled graph slice did not extend to the tempting 64-point support because the restricted exponent has a nonzero third additive difference. The remaining support classification was reduced to finite exact tasks, but those tasks were not completed.
+
+The lower-bound approach by contraction reached $\cat_{10}$, but the available pair-classification result only supplies the threshold three for the cited small-cat problem. Proving rank at least four would require control of spans of three stabilizer states, to which the pair normal form does not directly generalize. The projection from $\cat_{12}$ similarly supplies no stronger numerical upper bound.
+
+Computational investigations were also tried as search guidance, but none yielded an exact certificate:
+\begin{itemize}
+\item The five-qubit Pauli-spectrum enumeration gave
+\[
+\mathrm{PS}(\cat_5):
+(-1/2)^{20},(-1/4)^{40},0^{782},
+(1/4)^{120},(1/2)^{60},1^2.
+\]
+Orthogonal canonical rank-two candidates had $710$ zero Pauli expectations. The nonorthogonal candidates $\gamma=\pm i$ had $722$ zeros. The candidate $\gamma=-1/2$ had $782$ zeros but thirty expectations of absolute value $3/4$. This finite comparison is part of the cited small-cat line of attack, but it did not provide control of spans of three stabilizer states or prove $\chi(\cat_{10})\geq4$.
+
+\item The Clifford $A=e^{-i\pi/4}SX$ has eigenvectors $T,T^\perp$ with eigenvalues $+1,-1$. Applying $A$ on any even subset of the six qubits fixes $C$. Applying these symmetries to $g,e,k$ generated $48$ distinct stabilizer rays spanning a $32$-dimensional subspace. Randomized searches over products of these rays found no exact eight-term witness. This is evidence only about that restricted pool.
+
+\item The parity support was Clifford-compressed using the six-bit invertible map
+\[
+x\longmapsto(x_1+\cdots+x_6,x_2,\ldots,x_6).
+\]
+Thus one cat state is Clifford-equivalent to a five-qubit state tensored with a stabilizer ancilla, and its square reduces in the same way to a ten-qubit target. A simulated-annealing search at rank eight did not yield a certificate; this is not evidence against the conjecture.
+
+\item A warm-started simulated-annealing search for a rank-three decomposition of the smaller target $D^{\otimes2}$ did not improve on the residual of a leave-one-out four-product seed. This is search evidence only, not a lower bound on $\chi(D^{\otimes2})$.
+\end{itemize}
+
+Other possible shortcuts do not close the problem. The generic multiplicativity result of Lovitz--Steffan does not decide this special algebraic rank-two state. Stabilizer fidelity or extent has not been used as a rank lower bound because the needed general inequality between extent and rank is not supplied by the usual Cauchy--Schwarz argument for an ill-conditioned minimal stabilizer spanning set. The 2026 Labib--Russo four-copy qubit identity concerns a different Clifford orbit and therefore does not provide the required decomposition for the phase state used here.
+
+\subsection*{Promising next steps}
+
+For the upper bound, a successful next step would be an exact affine-quadratic search over genuinely entangled ten- or twelve-qubit stabilizer states. Concretely, it could produce a three-term certificate for the phase function (7), necessarily using at least one stabilizer outside the natural tensor-square plane, or directly produce eight stabilizer summands for $C\otimes C$ together with exact tableau data, exact algebraic coefficients, and a computational-basis amplitude verification. For exclusion along the reduced route, it would suffice to complete the exact classification of the $2046$ rank-two hyperplane-coset restrictions and the at-most-three full-support phase representations.
+
+For the lower bound, a promising next step would be a classification of three-stabilizer spans sufficient to decide whether $\chi(\cat_{10})\geq4$, or a different stabilizer contraction whose output has a known rank-four lower bound. Such a result would improve the interval, though it would not by itself decide the eight-term conjecture. Determining the exact value ultimately requires both an exact $k$-term witness and an exclusion of all smaller ranks.
+
+\begin{thebibliography}{9}
+
+\bibitem{QassimThesis}
+Hammam Qassim,
+\emph{Classical Simulations of Quantum Systems Using Stabilizer Decompositions},
+PhD thesis, University of Waterloo, 2020; deposited in UWSpace in 2021.
+\url{https://dspacemainprd01.lib.uwaterloo.ca/server/api/core/bitstreams/aff1f984-003a-4801-bd9c-608f0bfb8743/content}.
+The official repository record, dated February 19, 2021, is
+\url{https://uwspace.uwaterloo.ca/items/147b4d1e-1a97-49a8-a3e0-f5954c570cdb}.
+The conjecture $\chi(\cat_6^{\otimes2})\leq8$ is equation (4.30) in \S4.4, ``Discussion, conjectures, and open problems''; the conjectural exponent $3/8$ is equation (4.31).
+
+\bibitem{QPG2021}
+Hammam Qassim, Hakop Pashayan, and David Gosset,
+\emph{Improved Upper Bounds on the Stabilizer Rank of Magic States},
+\emph{Quantum} \textbf{5}, 606 (2021).
+\url{https://quantum-journal.org/papers/q-2021-12-20-606/}.
+The three-term $\cat_6$ construction appears in the main text, and the appendix proves the exact value $\chi(\cat_6)=3$.
+
+\bibitem{BSS2016}
+Sergey Bravyi, Graeme Smith, and John A. Smolin,
+\emph{Trading Classical and Quantum Computational Resources},
+\emph{Physical Review X} \textbf{6}, 021043 (2016).
+\url{https://doi.org/10.1103/PhysRevX.6.021043}.
+Background on exact stabilizer rank and magic-state simulation.
+
+\bibitem{BBC2019}
+Sergey Bravyi, David Browne, Padraic Calpin, Earl Campbell, David Gosset, and Mark Howard,
+\emph{Simulation of Quantum Circuits by Low-Rank Stabilizer Decompositions},
+\emph{Quantum} \textbf{3}, 181 (2019).
+\url{https://quantum-journal.org/papers/q-2019-09-02-181/}.
+Background on stabilizer decompositions, stabilizer fidelity, and stabilizer extent.
+
+\bibitem{LovitzSteffan2022}
+Benjamin Lovitz and Vincent Steffan,
+\emph{New Techniques for Bounding Stabilizer Rank},
+\emph{Quantum} \textbf{6}, 692 (2022).
+\url{https://doi.org/10.22331/q-2022-04-20-692}.
+Besides general lower-bound techniques, this paper constructs rank-two states whose tensor squares have rank four. Its generic multiplicativity result does not decide the special algebraic state $D$ isolated here.
+
+\end{thebibliography}
+
+\end{document}

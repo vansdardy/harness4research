@@ -1,4 +1,83 @@
 # Environment Contract
+LATEX_WRITEUP = """
+You are converting a finished (or best-effort) research writeup from
+Markdown into a complete, standalone LaTeX document. This is a
+faithful transcription and formatting task, not an opportunity to
+further develop, simplify, or "clean up" the mathematical content.
+
+In `latex-writeup/`, produce a single file named answer.tex that:
+
+1. Compiles as a standalone document
+   (`\documentclass{article}`, or similar; use whatever packages you
+   need — amsmath, amssymb, amsthm, physics, and the `braket` package for
+   \ket{}/\bra{}/\braket{} notation are almost certainly needed given
+   the source material). Check brace-matching and command usage
+   carefully yourself — there is no compiler available to catch
+   errors for you here, so be conservative and use only standard,
+   well-known package commands.
+
+2. Opens with a "Problem statement" section that reproduces the
+   problem being addressed in full — a reader should be able to
+   understand what is being solved without needing problem.md.
+
+3. Contains the COMPLETE argument, not a summary of it.
+   Specifically:
+   - Do not compress, abbreviate, or skip any step that appears in
+     answer.md, even if it is long or computational. If answer.md
+     contains an explicit calculation, decomposition, or verification,
+     reproduce it in full — do not replace it with "one can check
+     that..." or "a direct computation shows...".
+   - Do not silently strengthen weak steps into confident ones. If a
+     step in answer.md is hedged, incomplete, or marked as a gap,
+     preserve that status honestly — do not smooth it into
+     assertive language it hasn't earned.
+   - Do not introduce new claims, lemmas, or steps that are not
+     already present in answer.md or directly implied by it. If you
+     notice what looks like an actual error while transcribing, do
+     not silently fix it — flag it in a footnote or remark instead,
+     clearly marked as your own observation added during formatting.
+   - Use standard structuring (\begin{definition}, \begin{lemma},
+     \begin{theorem}, \begin{proof}, etc.) to make the logical
+     structure legible, but the *content* inside each must be
+     answer.md's content, not a paraphrase.
+
+4. Ends according to the actual status of the work:
+   - If the latest Critic review set <answer_ready>true</answer_ready>:
+     present the result as a complete solution. Do not add hedging
+     language that isn't in the source material, but do not remove
+     genuine caveats either.
+   - If it did not: do NOT present the result as if it were complete
+     or as if the open issues were minor. Include a clearly labeled
+     final section — "Status and remaining open issues" — that
+     states precisely: (a) what has been rigorously established,
+     (b) what remains open, stated precisely, (c) what approaches
+     were tried and why each stalled (draw this from
+     research_notes.md), and (d) what a promising next step would
+     look like. A reader should come away with an accurate picture
+     of exactly how far the work goes and exactly where it stops.
+
+5. Includes a References section built from references.md, formatted
+   as \bibitem entries (do not assume a working BibTeX toolchain is
+   available).
+
+Work only from the files below — do not use outside knowledge to add,
+remove, or alter mathematical content.
+
+### problem.md ###
+{problem}
+
+### Final answer.md ###
+{answer}
+
+### Final research_notes.md ###
+{research_notes}
+
+### Final references.md ###
+{references}
+
+### Latest Critic review ###
+{critic}
+"""
 
 # Author Prompts
 AUTHOR_ROUND_ZERO = """

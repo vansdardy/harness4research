@@ -1,4 +1,6 @@
-#### Problem statement and conventions
+## Progress report (final-round status: unresolved)
+
+### Conventions
 
 I interpret “computational basis” as the fixed standard computational basis. Clifford changes of basis may be used explicitly because stabilizer rank is Clifford-invariant; an arbitrary orthonormal change of basis is not allowed.
 
@@ -10,7 +12,7 @@ $$
 
 where $L$ is a linear polynomial modulo $4$ and $Q$ is a quadratic polynomial modulo $2$ (constant and linear terms may be absorbed between the two factors). This is the standard meaning of the phase convention in the question.
 
-#### Result
+### Best proved bound
 
 Let $C=|\mathrm{cat}_6\rangle$. The rigorous conclusion is
 
@@ -18,7 +20,7 @@ $$
 \boxed{3\leq \chi(C\otimes C)\leq 9.}
 $$
 
-The upper bound is given by an exact nine-term decomposition below. The lower bound uses the published theorem $\chi(\mathrm{cat}_6)=3$ and a stabilizer contraction. I do not obtain an eight-term decomposition, nor a lower bound excluding rank eight. Thus the question whether
+The upper bound is given by an exact nine-term decomposition below. The lower bound uses the published theorem $\chi(\mathrm{cat}_6)=3$ and a stabilizer contraction. I do not obtain an eight-term decomposition, nor a lower bound excluding rank eight. Therefore this is a progress report, not a complete solution. The question whether
 
 $$
 \chi(C\otimes C)\leq8
@@ -26,7 +28,7 @@ $$
 
 remains unresolved here; it is Qassim's Conjecture (4.30) in thesis §4.4.
 
-#### An exact three-term decomposition of $C$
+### An exact three-term decomposition of $C$
 
 Put
 
@@ -101,7 +103,7 @@ $$
 
 Both sides vanish on odd-weight strings, so this proves (1) on every computational-basis vector.
 
-#### The nine-term upper bound
+### The nine-term upper bound
 
 Let
 
@@ -191,7 +193,7 @@ $$
 This argument does not apply to stabilizer states entangled across the $6|6$
 cut, which are allowed in the definition of $\chi(C\otimes C)$.
 
-#### A smaller exact target for an eight-term construction
+### A smaller exact target for an eight-term construction
 
 Put
 
@@ -424,7 +426,7 @@ supports were both proper, those two supports would have to be the two
 complementary affine hyperplanes (otherwise their union has at most $768<992$
 points), although a full-support remaining summand is also possible.
 
-#### The lower bound
+### The lower bound
 
 Qassim, Pashayan, and Gosset prove in the appendix of *Improved Upper Bounds on the Stabilizer Rank of Magic States* that
 
@@ -459,7 +461,7 @@ $$
 \chi(C\otimes C)\geq3.
 $$
 
-#### A further exact contraction
+### A further exact contraction
 
 There is a useful further reduction of the lower-bound problem. Let
 
@@ -530,7 +532,7 @@ $$
 No bound on $\mathrm{cat}_{12}$ strong enough to improve nine is established
 here.
 
-#### Remaining open issues
+### What remains open and a promising next step
 
 1. **Eight-term upper bound.** The gap is whether the upper bound after (2) can be lowered to eight. The exact product construction (2) was analyzed, including the independence of its nine summands. The product-cut argument also forces strong dependencies in any eight-term decomposition of product stabilizer states, but it does not constrain genuinely entangled stabilizer summands. Equation (4) reduces one concrete route to finding a three-term decomposition of the ten-qubit phase function (7). The tensor-square-plane classification proves that such a decomposition cannot stay inside the natural span of the four product summands, and the tempting 64-point enlargement of the known graph slice was excluded by a third-difference obstruction. The support-dimension argument further reduces exclusion of this route to hyperplane restrictions and the full-support case, but those finite checks were not completed. Either a three-term certificate for (7), necessarily using stabilizers outside the natural tensor-square plane, or an affine-quadratic description of eight different stabilizer summands with an exact amplitude verification, would close the upper-bound gap.
 
