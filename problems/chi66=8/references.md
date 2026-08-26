@@ -6,4 +6,4 @@
 
 - Sergey Bravyi, David Browne, Padraic Calpin, Earl Campbell, David Gosset, and Mark Howard, [*Simulation of Quantum Circuits by Low-Rank Stabilizer Decompositions*](https://quantum-journal.org/papers/q-2019-09-02-181/), *Quantum* **3**, 181 (2019). Background on stabilizer decompositions, stabilizer fidelity, and stabilizer extent.
 
-- Benjamin Lovitz and Vincent Steffan, [*New Techniques for Bounding Stabilizer Rank*](https://doi.org/10.22331/q-2022-04-20-692), *Quantum* **6**, 692 (2022). General lower-bound context; it does not determine the small instance considered here.
+- Benjamin Lovitz and Vincent Steffan, [*New Techniques for Bounding Stabilizer Rank*](https://doi.org/10.22331/q-2022-04-20-692), *Quantum* **6**, 692 (2022). Besides general lower-bound techniques, this paper constructs rank-two states whose tensor squares have rank four. Its generic multiplicativity result does not decide the special algebraic state $D$ isolated here.
