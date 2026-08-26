@@ -129,6 +129,68 @@ $$
 
 For clarity, the nine states in this particular expansion are linearly independent. Indeed, a relation among $g,e,k$ evaluated on strings of weights $2$ and $4$ first forces the coefficients of $e,k$ to vanish, and then the coefficient of $g$ vanishes. Tensor products of two independent triples are independent. This only shows that one cannot delete a term from (2); it is not an obstruction to an eight-term decomposition using different, possibly entangled, stabilizer states.
 
+There is a modest general obstruction to improving (2) while keeping every
+summand product across the displayed $6|6$ cut. Suppose
+
+$$
+C\otimes C=\sum_{j=1}^k c_j\,|\alpha_j\rangle\otimes|\beta_j\rangle,
+$$
+
+where every $\alpha_j$ and $\beta_j$ is a six-qubit stabilizer state. Group
+proportional left factors, absorbing proportionality constants into the
+coefficients, and denote the distinct resulting left factors by
+$\alpha_{(1)},\ldots,\alpha_{(m)}$. If these vectors are linearly independent,
+the decomposition has the form
+
+$$
+C\otimes C=\sum_{p=1}^m |\alpha_{(p)}\rangle\otimes|u_p\rangle.
+$$
+
+Contracting the right block against a linear functional nonzero on $C$ first
+shows that $C$ belongs to the span of the $\alpha_{(p)}$. Uniqueness of
+coordinates in this independent left family then gives scalars $\lambda_p$ such
+that
+
+$$
+C=\sum_{p=1}^m\lambda_p|\alpha_{(p)}\rangle,
+\qquad |u_p\rangle=\lambda_p C.
+$$
+
+At least three $\lambda_p$ are nonzero because $\chi(C)=3$. For every such $p$,
+the terms grouped into $u_p$ express a nonzero multiple of $C$ using the
+stabilizer states $\beta_j$, and hence that group contains at least three terms.
+Consequently $k\ge9$. Thus an eight-term decomposition consisting only of
+product stabilizer states would have to use linearly dependent sets of distinct
+left factors and, by the same argument, distinct right factors.
+
+The necessary dependence can also be quantified without assuming the distinct
+factors independent. Regard the decomposition as the amplitude-matrix identity
+
+$$
+ADB^{\mathsf T}=CC^{\mathsf T},
+$$
+
+where the columns of $A$ and $B$ are the amplitude vectors of $\alpha_j$ and
+$\beta_j$, and $D=\operatorname{diag}(c_1,\ldots,c_k)$ after zero terms are
+removed. If $r=\operatorname{rank}A$ and $r'=\operatorname{rank}B$, Sylvester's
+rank inequality gives
+
+$$
+1=\operatorname{rank}(ADB^{\mathsf T})\ge r+r'-k.
+$$
+
+Moreover $C$ belongs to both column spans: contract the other tensor factor
+against any linear functional nonzero on $C$. Since each column is a stabilizer
+state and $\chi(C)=3$, it follows that $r,r'\ge3$. Any eight-term product-cut
+decomposition must therefore satisfy
+
+$$
+3\le r,r',\qquad r+r'\le9.
+$$
+
+This argument does not apply to stabilizer states entangled across the $6|6$
+cut, which are allowed in the definition of $\chi(C\otimes C)$.
+
 #### The lower bound
 
 Qassim, Pashayan, and Gosset prove in the appendix of *Improved Upper Bounds on the Stabilizer Rank of Magic States* that
@@ -137,6 +199,11 @@ $$
 \chi(\mathrm{cat}_6)=3.
 \tag{3}
 $$
+
+The paper uses $|T\rangle_{\rm norm}=2^{-1/2}(|0\rangle+\omega|1\rangle)$,
+whereas the problem uses the unnormalized vector. Its cat state is consequently
+$C/8$. Multiplication by a nonzero overall scalar does not affect stabilizer
+rank, so (3) applies with the convention here.
 
 Their proof first shows $\chi(\mathrm{cat}_5)>2$ by a canonical-form classification of pairs of stabilizer states and a finite Pauli-spectrum comparison, and then uses the computational-basis contraction $\langle0|\mathrm{cat}_6\rangle\propto\mathrm{cat}_5$. I use (3) as a cited theorem rather than claiming a self-contained reproduction of that classification and computer-assisted finite check.
 
@@ -161,7 +228,7 @@ $$
 
 #### A further exact contraction
 
-There is a useful reformulation of the lower-bound problem. Let
+There is a useful further reduction of the lower-bound problem. Let
 
 $$
 |B\rangle=|00\rangle+i|11\rangle,
@@ -184,7 +251,11 @@ $$
 \tag{5}
 $$
 
-The same restriction argument, now using an arbitrary stabilizer bra (or equivalently the standard closure of stabilizer states under postselected Pauli measurements), yields
+For completeness, choose a two-qubit Clifford $W$ such that
+$W|00\rangle\propto|B\rangle$. Then $\langle B|\propto\langle00|W^\dagger$.
+Thus contraction with $\langle B|$ is a Clifford operation on the contracted
+qubits followed by computational-basis restriction, and it maps each stabilizer
+summand to zero or a stabilizer state. Therefore
 
 $$
 \chi(C\otimes C)\geq\chi(\mathrm{cat}_{10}).
@@ -195,7 +266,7 @@ At present this does not strengthen the numerical lower bound: computational-bas
 
 #### Remaining open issues
 
-1. **Eight-term upper bound.** The gap is whether the upper bound after (2) can be lowered to eight. The exact product construction (2) was analyzed, including the independence of its nine summands, but this only rules out deleting a term from that construction. An affine-quadratic description of eight alternative stabilizer summands, together with an exact amplitude verification, would close this gap.
+1. **Eight-term upper bound.** The gap is whether the upper bound after (2) can be lowered to eight. The exact product construction (2) was analyzed, including the independence of its nine summands. The product-cut argument also forces strong dependencies in any eight-term decomposition of product stabilizer states, but it does not constrain genuinely entangled stabilizer summands. An affine-quadratic description of eight alternative stabilizer summands, together with an exact amplitude verification, would close this gap.
 
 2. **Lower bound above three.** The gap in (4)–(6) is that the contractions certify only rank three. The Bell contraction (5) was tried as a reduction to $\mathrm{cat}_{10}$, but the cited small-cat classification does not prove $\chi(\mathrm{cat}_{10})\geq4$. Excluding all three-stabilizer spans containing $\mathrm{cat}_{10}$, or finding another contraction with a known rank-four output, would close this gap; it would improve the interval but would not settle the eight-term conjecture.
 

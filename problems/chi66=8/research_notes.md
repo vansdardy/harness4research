@@ -31,7 +31,7 @@ For the repetition-code support of $g$, using the affine coordinate $t\in\mathbb
 
 The vectors $g,e,k$ are independent. A linear relation evaluated at weights two and four forces the $e,k$ coefficients to vanish, after which the $g$ coefficient vanishes. Hence their nine pairwise tensor products are independent. This says only that the displayed tensor-product decomposition cannot be shortened by deletion; it gives no general rank-nine lower bound.
 
-Qassim's 2020 Waterloo thesis states the target conjecture as equation (4.30), near the end of §4.3:
+Qassim's Waterloo thesis is dated February 19, 2021 in the official repository record. It states the target conjecture as equation (4.30), near the end of §4.3:
 
 \[
 \chi(\mathrm{cat}_6\otimes\mathrm{cat}_6)\leq 8.
@@ -44,6 +44,40 @@ Equation (4.31) explains the conjectural exponent $3/8$. Pairing $2L$ copies int
 \]
 
 The lower bound $\chi(C^{\otimes2})\ge3$ is best presented using the published exact theorem $\chi(\mathrm{cat}_6)=3$, proved in the appendix of Qassim–Pashayan–Gosset, followed by the contraction of one block with $\langle0^6|$. The appendix proof of $\chi(\mathrm{cat}_5)>2$ uses a canonical form for pairs of stabilizer states and computer-assisted Pauli-spectrum comparisons. A short summary that omits the canonical-form proof, the restriction $0<|\gamma|\le1$, normalization factors, and the finite computation is not a self-contained proof and should not be presented as one.
+
+Qassim–Pashayan–Gosset use normalized $T$ states. Their cat state equals $C/8$
+under the convention of this problem, since the six factors of $1/\sqrt2$
+contribute $1/8$ and the outer factor is unchanged. Overall nonzero scaling
+leaves exact stabilizer rank invariant.
+
+There is a rigorous restriction on decompositions product across the natural
+$6|6$ cut. If
+
+\[
+C\otimes C=\sum_{j=1}^k c_j\alpha_j\otimes\beta_j
+\]
+
+with stabilizer factors, and the distinct left rays are independent, grouping
+equal left rays gives $C\otimes C=\sum_p\alpha_p\otimes u_p$. Partial
+contraction first shows that $C$ is in the left span. Uniqueness in the
+independent left family then forces $u_p=\lambda_pC$ and
+$C=\sum_p\lambda_p\alpha_p$. At least three $\lambda_p$ are nonzero, and each
+corresponding group needs at least three right stabilizer states because
+$\chi(C)=3$. Hence $k\ge9$. The same statement holds with left and right
+exchanged.
+
+More generally, write the amplitude-matrix identity as
+
+\[
+ADB^{\mathsf T}=CC^{\mathsf T},
+\]
+
+where $A,B$ contain the local stabilizer vectors and $D$ the nonzero
+coefficients. If $r=\operatorname{rank}A$ and $r'=\operatorname{rank}B$, Sylvester's
+inequality gives $r+r'\le k+1$. Partial contraction shows $C$ lies in each local
+column span, so $r,r'\ge\chi(C)=3$. Thus for $k=8$ one necessarily has
+$r+r'\le9$, and both local collections are dependent. This does not address
+stabilizer summands entangled across the cut.
 
 There is a second exact contraction. Let
 
@@ -69,7 +103,10 @@ Contracting one qubit from each block of $C^{\otimes2}$ therefore gives
 =\sqrt2\,\mathrm{cat}_{10}.
 \]
 
-Thus
+Choose a two-qubit Clifford $W$ with $W|00\rangle\propto B$. Then
+$\langle B|\propto\langle00|W^\dagger$, so Bell contraction preserves stabilizer
+states (or annihilates them) by Clifford closure followed by computational-basis
+restriction. Thus
 
 \[
 \chi(C^{\otimes2})\ge\chi(\mathrm{cat}_{10})\ge3.
