@@ -52,7 +52,7 @@ In `latex-writeup/`, produce a single file named answer.tex that:
      states precisely: (a) what has been rigorously established,
      (b) what remains open, stated precisely, (c) what approaches
      were tried and why each stalled (draw this from
-     research_notes.md), and (d) what a promising next step would
+     research_note.md), and (d) what a promising next step would
      look like. A reader should come away with an accurate picture
      of exactly how far the work goes and exactly where it stops.
 
@@ -69,8 +69,8 @@ remove, or alter mathematical content.
 ### Final answer.md ###
 {answer}
 
-### Final research_notes.md ###
-{research_notes}
+### Final research_note.md ###
+{research_note}
 
 ### Final references.md ###
 {references}
@@ -95,7 +95,7 @@ what you've established so far. Use standard Markdown; LaTeX math
 inline/display via $...$ and $$...$$ must used for the file to properly render.
 You may write to this file.)
 
-### research_notes.md ###
+### research_note.md ###
 (Your reasoning trace, literature notes, scratch computations. Need
 not be polished. This is your persistent scratchpad across rounds —
 do NOT turn it into a changelog or a reply to a critic; a future
@@ -117,7 +117,7 @@ virtual environment as needed.
 Treat the sandbox as scratch space: nothing there is part of the
 deliverable, and nothing you write there needs to be polished. If a
 script's result matters for the proof, summarize the finding (and,
-if it's short, the exact command/output) in research_notes.md — the
+if it's short, the exact command/output) in research_note.md — the
 sandbox folder itself is not persistent evidence anyone will read.
 
 ---
@@ -164,14 +164,14 @@ To update a file, write/modify its full new contents to
 the corresponding file. Files you don't re-output are considered
 unchanged.
 
-**research_notes.md is your persistent scratchpad across rounds.**
+**research_note.md is your persistent scratchpad across rounds.**
 Do not turn it into a changelog or reply to the Critic.
 
 You have a sandbox folder at `sandbox/` where you can write and
 run any script to help yourself. Before running anything, activate
 the virtual environment: `source sandbox/.venv/bin/activate`. Then, you may install 
 any packages in the virtual environment as needed. Summarize any
-finding that matters for the proof in research_notes.md — the
+finding that matters for the proof in research_note.md — the
 sandbox itself is scratch space, not persistent evidence.
 
 You have ONE opportunity this round to consult an outside expert
@@ -223,8 +223,8 @@ issues": for each gap state (a) what it is, (b) where it appears,
 ### Current answer.md ###
 {answer}
 
-### Current research_notes.md ###
-{research_notes}
+### Current research_note.md ###
+{research_note}
 
 ### Current references.md ###
 {references}
@@ -260,7 +260,7 @@ Based on the current state of answer.md, either:
       next step would look like. Do NOT present partial results as
       if they were a complete solution.
 
-Output the final contents of answer.md, research_notes.md, and
+Output the final contents of answer.md, research_note.md, and
 references.md under the same "### filename ###" headers as before,
 ending with exactly one of <ready>true</ready> or <ready>false</ready>
 on its own line — even here, be honest: if (b) applies, that's
@@ -272,8 +272,8 @@ on its own line — even here, be honest: if (b) applies, that's
 ### Current answer.md ###
 {answer}
 
-### Current research_notes.md ###
-{research_notes}
+### Current research_note.md ###
+{research_note}
 
 ### Current references.md ###
 {references}
@@ -318,8 +318,8 @@ This is the Author's scratchpad — not the deliverable, and not the
 focus of your review. Skim it; flag any fatal error you happen to
 spot. Otherwise concentrate on answer.md.
 
-## research_notes.md
-{research_notes}
+## research_note.md
+{research_note}
 """
 
 CRITIC_ROUNDS = """
@@ -341,8 +341,8 @@ introduced.
 {references}
 
 # Author's working notes (background context only)
-## research_notes.md (revised)
-{research_notes}
+## research_note.md (revised)
+{research_note}
 
 Set <answer_ready>true</answer_ready> only if answer.md fully solves
 the stated problem, with no remaining gaps. End with
@@ -379,8 +379,8 @@ or "$$...$$"
 ### Current answer.md ###
 {answer}
 
-### Current research_notes.md ###
-{research_notes}
+### Current research_note.md ###
+{research_note}
 
 ### Supporting references ###
 Find relevant supporting references in the `references.md` and `references/` folder
